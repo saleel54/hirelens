@@ -1,0 +1,253 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6366F1;
+  --color-primary-dark: #4F46E5;
+  --color-primary-light: #818CF8;
+  
+  --color-secondary: #475569;
+  --color-secondary-dark: #0F172A;
+  --color-secondary-light: #64748B;
+  
+  --color-background: #F8FAFC;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-outfit: 'Outfit', sans-serif;
+  
+  --animate-spin-slow: spin-slow 15s linear infinite;
+  
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* ==========================================================================
+   Luxury Ambient Design System
+   ========================================================================== */
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.04) 0%, transparent 35%),
+    radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.015) 0%, transparent 35%);
+  color: var(--color-secondary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-outfit);
+  color: var(--color-secondary-dark);
+  letter-spacing: -0.03em;
+}
+
+/* Custom premium scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1; /* slate-300 */
+  border-radius: 9999px;
+  transition: all 0.3s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8; /* slate-400 */
+}
+
+/* ==========================================================================
+   Tactile Frosted Satin Glass panels (Automatic .bg-white mapping)
+   ========================================================================== */
+.bg-white {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  border: 1px solid rgba(226, 232, 240, 0.6) !important;
+  box-shadow: 
+    0 10px 30px -10px rgba(15, 23, 42, 0.015),
+    0 1px 1px rgba(15, 23, 42, 0.01),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bg-white:hover {
+  transform: translateY(-2px);
+  border-color: rgba(99, 102, 241, 0.25) !important;
+  box-shadow: 
+    0 20px 40px -15px rgba(15, 23, 42, 0.03),
+    0 1px 3px rgba(15, 23, 42, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Premium Form inputs globally */
+input, textarea, select {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  border-radius: 12px;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none !important;
+  border-color: var(--color-primary) !important;
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 
+    0 0 15px -3px rgba(99, 102, 241, 0.2),
+    0 4px 12px -2px rgba(99, 102, 241, 0.05) !important;
+}
+
+/* ==========================================================================
+   Sophisticated Dark Theme Overrides (Linear/Vercel inspired space-mesh)
+   ========================================================================== */
+.dark {
+  --color-background: #030509;       /* Deep space black-midnight base */
+  --color-secondary: #94A3B8;        /* Soft metallic slate text */
+  --color-secondary-dark: #F8FAFC;   /* Stellar white headings */
+  --color-secondary-light: #64748B;  /* Deep slate subtext */
+}
+
+.dark body {
+  background-color: var(--color-background);
+  color: var(--color-secondary);
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(168, 85, 247, 0.09) 0%, transparent 45%),
+    radial-gradient(circle at 50% 30%, rgba(6, 182, 212, 0.04) 0%, transparent 40%);
+}
+
+/* Dark Glassmorphism */
+.dark .bg-white {
+  background-color: rgba(10, 14, 26, 0.6) !important;
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: 
+    0 15px 35px -15px rgba(0, 0, 0, 0.6),
+    0 1px 2px rgba(255, 255, 255, 0.02),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark .bg-white:hover {
+  border-color: rgba(99, 102, 241, 0.22) !important;
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.8),
+    0 1px 3px rgba(255, 255, 255, 0.03),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sidebar Dark overrides to maintain premium depth levels */
+.dark aside {
+  background-color: rgba(3, 5, 9, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.03) !important;
+  box-shadow: 4px 0 30px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dark aside .bg-white {
+  background-color: rgba(15, 22, 42, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.04) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Smooth Navigation buttons in Dark sidebar */
+.dark nav button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark nav button.text-slate-500:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  color: #F8FAFC !important;
+}
+
+/* Translucent Dividers and borders */
+.dark .border-slate-100,
+.dark .border-slate-200,
+.dark .border-slate-100\/80 {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Background overlay adjustments in lists and tables */
+.dark .bg-slate-50\/20,
+.dark .bg-slate-50\/30,
+.dark .bg-slate-50\/40,
+.dark .bg-slate-50\/50,
+.dark .bg-slate-50 {
+  background-color: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+.dark .divide-slate-100 > * + *,
+.dark .divide-slate-200 > * + * {
+  border-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.dark .text-slate-400 {
+  color: #64748B !important;
+}
+
+.dark .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+/* Row-level micro-interactions in Dark lists */
+.dark .hover\:bg-slate-50\/50:hover,
+.dark .hover\:bg-slate-50\/80:hover,
+.dark .hover\:bg-slate-50:hover,
+.dark tr.hover\:bg-slate-50\/50:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Premium Dark inputs */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: rgba(3, 5, 9, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+  color: #F8FAFC !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: var(--color-primary) !important;
+  background-color: rgba(8, 12, 24, 0.9) !important;
+  box-shadow: 
+    0 0 20px -3px rgba(99, 102, 241, 0.35),
+    0 4px 20px -2px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Scrollbar adjustment for dark mode */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Micro-Interaction Global Hover Classes */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -10px rgba(99, 102, 241, 0.15);
+}
