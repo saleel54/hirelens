@@ -62,7 +62,7 @@ function AppContent() {
 
   // 3. Authenticated App Layout
   return (
-    <div className="flex bg-background min-h-screen">
+    <div className="flex flex-col lg:flex-row bg-background min-h-screen">
       {/* Sidebar Navigation */}
       <Sidebar 
         activeTab={activeTab} 
@@ -70,7 +70,7 @@ function AppContent() {
       />
 
       {/* Main Content Pane */}
-      <main className="flex-1 p-8 overflow-y-auto max-h-screen flex flex-col justify-between">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto lg:max-h-screen flex flex-col justify-between">
         <div className="flex-1">
           {activeReportData ? (
             <Report 
