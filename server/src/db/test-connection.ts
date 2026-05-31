@@ -2,11 +2,6 @@ import pg from 'pg';
 import { GoogleGenAI } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
-import { fileURLToPath } from 'url';
-
-// Resolve current directory for ESM compatibility
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Load environment variables from the server/.env file
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
