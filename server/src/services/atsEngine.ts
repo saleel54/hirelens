@@ -69,16 +69,30 @@ export const checkResumeQuality = (text: string): { score: number; breakdown: Re
  * Calculates the final ATS Score and returns the breakdown of scores
  * @param resumeText Raw resume text content
  * @param jdText Raw job description content
+ * @param aiScores Optional AI-computed overrides from Gemini
  * @returns Complete ATS calculation details
  */
-export const calculateATSScore = (resumeText: string, jdText: string): ATSAnalysisResult => {
+export const calculateATSScore = (
+  resumeText: string,
+  jdText: string,
+  aiScores?: {
+    skillsMatchScore?: number;
+    projectsRelevanceScore?: number;
+    matchedSkills?: string[];
+    missingSkills?: string[];
+  }
+): ATSAnalysisResult => {
   // 1. Skills Comparison (40%)
-  const { matchedSkills, missingSkills } = compareSkills(resumeText, jdText);
-  const totalRequiredSkillsCount = matchedSkills.length + missingSkills.length;
+  const matchedSkills = aiScores?.matchedSkills ?? compareSkills(resumeText, jdText).matchedSkills;
+  const missingSkills = aiScores?.missingSkills ?? compareSkills(resumeText, jdText).missingSkills;
   
-  let skillsMatchScore = 100; // default if no specific skills are found
-  if (totalRequiredSkillsCount > 0) {
-    skillsMatchScore = Math.round((matchedSkills.length / totalRequiredSkillsCount) * 100);
+  let skillsMatchScore = aiScores?.skillsMatchScore;
+  if (skillsMatchScore === undefined) {
+    const totalRequiredSkillsCount = matchedSkills.length + missingSkills.length;
+    skillsMatchScore = 100; // default if no specific skills are found
+    if (totalRequiredSkillsCount > 0) {
+      skillsMatchScore = Math.round((matchedSkills.length / totalRequiredSkillsCount) * 100);
+    }
   }
 
   // 2. Resume Quality Check (20%)
@@ -86,20 +100,22 @@ export const calculateATSScore = (resumeText: string, jdText: string): ATSAnalys
   const resumeQualityScore = qualityAudit.score;
 
   // 3. Projects Relevance Score (25%)
-  let projectsRelevanceScore = 0;
-  if (qualityAudit.breakdown.projectsPresent) {
-    // If project section is present, check technical complexity overlap
-    if (matchedSkills.length >= 3) {
-      projectsRelevanceScore = 100;
-    } else if (matchedSkills.length === 2) {
-      projectsRelevanceScore = 85;
-    } else if (matchedSkills.length === 1) {
-      projectsRelevanceScore = 70;
+  let projectsRelevanceScore = aiScores?.projectsRelevanceScore;
+  if (projectsRelevanceScore === undefined) {
+    if (qualityAudit.breakdown.projectsPresent) {
+      // If project section is present, check technical complexity overlap
+      if (matchedSkills.length >= 3) {
+        projectsRelevanceScore = 100;
+      } else if (matchedSkills.length === 2) {
+        projectsRelevanceScore = 85;
+      } else if (matchedSkills.length === 1) {
+        projectsRelevanceScore = 70;
+      } else {
+        projectsRelevanceScore = 50; // default base score for having projects section
+      }
     } else {
-      projectsRelevanceScore = 50; // default base score for having projects section
+      projectsRelevanceScore = 0; // missing critical projects section
     }
-  } else {
-    projectsRelevanceScore = 0; // missing critical projects section
   }
 
   // 4. Education Relevance Score (15%)

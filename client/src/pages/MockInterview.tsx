@@ -52,6 +52,7 @@ export const MockInterview: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [speechSupported, setSpeechSupported] = useState<boolean>(false);
   const recognitionRef = React.useRef<any>(null);
+  const lastProcessedIndexRef = React.useRef<number>(-1);
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -60,19 +61,22 @@ export const MockInterview: React.FC = () => {
       
       const rec = new SpeechRecognition();
       rec.continuous = true;
-      rec.interimResults = true;
+      rec.interimResults = false; // Disable unused interim results to reduce CPU and increase stability
       rec.lang = 'en-US';
 
       rec.onstart = () => {
         setIsRecording(true);
         setErrorMsg(null);
+        lastProcessedIndexRef.current = -1; // Reset index tracking on new recording session
       };
 
       rec.onresult = (event: any) => {
         let finalTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
+          // Only append new final result segments we haven't processed yet
+          if (event.results[i].isFinal && i > lastProcessedIndexRef.current) {
             finalTranscript += event.results[i][0].transcript + ' ';
+            lastProcessedIndexRef.current = i;
           }
         }
         

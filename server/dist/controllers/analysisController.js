@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteHistory = exports.getHistoryById = exports.getHistory = exports.analyzeResume = void 0;
+exports.evaluateAnswer = exports.deleteHistory = exports.getHistoryById = exports.getHistory = exports.analyzeResume = void 0;
 const db_js_1 = require("../config/db.js");
 const parser_js_1 = require("../services/parser.js");
 const atsEngine_js_1 = require("../services/atsEngine.js");
@@ -34,11 +34,19 @@ const analyzeResume = async (req, res) => {
     try {
         // 2. Parse PDF buffer to raw text (Step 1 Loading state context)
         const resumeText = await (0, parser_js_1.parseResumePDF)(file.buffer);
-        // 3. Extract skills and calculate deterministic weighted ATS score (Steps 2 & 3 loading context)
-        const atsResult = (0, atsEngine_js_1.calculateATSScore)(resumeText, jobDescription);
-        // 4. Generate custom AI recommendations & interview prep questions (Steps 4 & 5 loading context)
-        const aiFeedback = await (0, gemini_js_1.generateAIFeedback)(resumeText, jobRole.trim(), jobDescription.trim(), atsResult.matchedSkills, atsResult.missingSkills);
-        // 5. Store completed analysis record into database
+        // 3. Extract baseline programmatic skills hints
+        const { compareSkills } = await import('../services/skillsEngine.js');
+        const programmaticSkills = compareSkills(resumeText, jobDescription);
+        // 4. Generate AI semantic matching, scoring, and interview prep questions
+        const aiFeedback = await (0, gemini_js_1.generateAIFeedback)(resumeText, jobRole.trim(), jobDescription.trim(), programmaticSkills.matchedSkills, programmaticSkills.missingSkills);
+        // 5. Calculate combined overall weighted ATS score blending AI scores & programmatic structure audits
+        const atsResult = (0, atsEngine_js_1.calculateATSScore)(resumeText, jobDescription, {
+            skillsMatchScore: aiFeedback.skillsMatchScore,
+            projectsRelevanceScore: aiFeedback.projectsRelevanceScore,
+            matchedSkills: aiFeedback.matchedSkills,
+            missingSkills: aiFeedback.missingSkills
+        });
+        // 6. Store completed analysis record into database
         const dbResult = await (0, db_js_1.query)(`INSERT INTO analyses (
         user_id, job_role, job_description, resume_file_name, 
         ats_score, resume_quality_score, scores_breakdown, matched_skills, 
@@ -168,3 +176,27 @@ const deleteHistory = async (req, res) => {
     }
 };
 exports.deleteHistory = deleteHistory;
+/**
+ * Evaluates candidate response to a custom mock interview question
+ */
+const evaluateAnswer = async (req, res) => {
+    const { question, answer, jobRole } = req.body;
+    if (!req.user) {
+        return res.status(401).json({ error: 'Unauthorized', message: 'User session not found.' });
+    }
+    if (!question || !answer) {
+        return res.status(400).json({ error: 'Validation Error', message: 'Question and answer are required.' });
+    }
+    try {
+        const evaluation = await (0, gemini_js_1.evaluateInterviewResponse)(question.trim(), answer.trim(), jobRole ? jobRole.trim() : 'Software Engineer');
+        return res.status(200).json(evaluation);
+    }
+    catch (error) {
+        console.error('❌ [analysis-controller-evaluate-answer-error]:', error);
+        return res.status(500).json({
+            error: 'Server Error',
+            message: error.message || 'An unexpected error occurred during interview question evaluation.'
+        });
+    }
+};
+exports.evaluateAnswer = evaluateAnswer;

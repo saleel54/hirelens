@@ -42,19 +42,28 @@ export const analyzeResume = async (req: AuthRequest, res: Response) => {
     // 2. Parse PDF buffer to raw text (Step 1 Loading state context)
     const resumeText = await parseResumePDF(file.buffer);
 
-    // 3. Extract skills and calculate deterministic weighted ATS score (Steps 2 & 3 loading context)
-    const atsResult = calculateATSScore(resumeText, jobDescription);
+    // 3. Extract baseline programmatic skills hints
+    const { compareSkills } = await import('../services/skillsEngine.js');
+    const programmaticSkills = compareSkills(resumeText, jobDescription);
 
-    // 4. Generate custom AI recommendations & interview prep questions (Steps 4 & 5 loading context)
+    // 4. Generate AI semantic matching, scoring, and interview prep questions
     const aiFeedback = await generateAIFeedback(
       resumeText,
       jobRole.trim(),
       jobDescription.trim(),
-      atsResult.matchedSkills,
-      atsResult.missingSkills
+      programmaticSkills.matchedSkills,
+      programmaticSkills.missingSkills
     );
 
-    // 5. Store completed analysis record into database
+    // 5. Calculate combined overall weighted ATS score blending AI scores & programmatic structure audits
+    const atsResult = calculateATSScore(resumeText, jobDescription, {
+      skillsMatchScore: aiFeedback.skillsMatchScore,
+      projectsRelevanceScore: aiFeedback.projectsRelevanceScore,
+      matchedSkills: aiFeedback.matchedSkills,
+      missingSkills: aiFeedback.missingSkills
+    });
+
+    // 6. Store completed analysis record into database
     const dbResult = await query(
       `INSERT INTO analyses (
         user_id, job_role, job_description, resume_file_name, 

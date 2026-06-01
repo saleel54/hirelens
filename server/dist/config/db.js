@@ -8,31 +8,35 @@ const pg_1 = __importDefault(require("pg"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const { Pool } = pg_1.default;
+const connectionString = process.env.DATABASE_URL;
 // Active Sandbox Mode flag
-exports.isSandboxMode = false;
+exports.isSandboxMode = !connectionString ||
+    connectionString.includes('YOUR_DATABASE_URL') ||
+    process.env.USE_SANDBOX === 'true';
 const setSandboxMode = (value) => {
     exports.isSandboxMode = value;
     if (value) {
         console.log('🤖 [database-simulation]: Sandbox Mode active. Query execution is fully simulated in memory.');
     }
+    else {
+        console.log('🔌 [database]: Sandbox Mode deactivated.');
+    }
 };
 exports.setSandboxMode = setSandboxMode;
+if (exports.isSandboxMode) {
+    console.log('🤖 [database-simulation]: Sandbox Mode initially active. Query execution is fully simulated in memory.');
+}
 // In-Memory Database storage structures for Sandbox Simulation
 const usersTable = [];
 const analysesTable = [];
 let nextUserId = 1;
 let nextAnalysisId = 1;
-const connectionString = process.env.DATABASE_URL;
 exports.pool = new Pool({
     connectionString,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 });
 exports.pool.on('error', (err) => {
-    // If we catch connection issues on idle, trigger sandbox simulation fallback
-    if (!exports.isSandboxMode) {
-        console.warn('⚠️ [database]: Idle client error. Activating Sandbox Simulator fallback.');
-        (0, exports.setSandboxMode)(true);
-    }
+    console.error('⚠️ [database]: Unexpected idle database client error:', err.message || err);
 });
 /**
  * Custom Query Router that directs queries to PostgreSQL or the In-Memory Simulator
@@ -43,7 +47,7 @@ const query = async (text, params) => {
     if (exports.isSandboxMode) {
         return simulateQuery(normalizedQuery, params || []);
     }
-    // 2. Real Database execution with dynamic sandbox activation on failure
+    // 2. Real Database execution
     try {
         const start = Date.now();
         const res = await exports.pool.query(text, params);
@@ -54,10 +58,8 @@ const query = async (text, params) => {
         return res;
     }
     catch (error) {
-        console.warn(`⚠️ [database-query-failed]: Database operation failed: ${error.message}. Switching to Sandbox Mode.`);
-        (0, exports.setSandboxMode)(true);
-        // Execute simulated query immediately so the request succeeds
-        return simulateQuery(normalizedQuery, params || []);
+        console.error(`❌ [database-query-failed]: Database operation failed: ${error.message}`);
+        throw error;
     }
 };
 exports.query = query;

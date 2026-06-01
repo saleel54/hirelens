@@ -20,4 +20,5 @@ router.post('/analyze', authMiddleware_js_1.authenticateToken, upload.single('re
 router.get('/history', authMiddleware_js_1.authenticateToken, analysisController_js_1.getHistory);
 router.get('/history/:id', authMiddleware_js_1.authenticateToken, analysisController_js_1.getHistoryById);
 router.delete('/history/:id', authMiddleware_js_1.authenticateToken, analysisController_js_1.deleteHistory);
+router.post('/evaluate-answer', authMiddleware_js_1.authenticateToken, analysisController_js_1.evaluateAnswer);
 exports.default = router;

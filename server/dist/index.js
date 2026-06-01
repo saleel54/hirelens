@@ -14,9 +14,22 @@ const analysisRoutes_js_1 = __importDefault(require("./routes/analysisRoutes.js"
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
-// Enable CORS
+// Enable CORS with dynamic localhost support for development port shifts
+const allowedOrigins = [process.env.CLIENT_URL || 'http://localhost:5173'];
 app.use((0, cors_1.default)({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, postman)
+        if (!origin)
+            return callback(null, true);
+        // Check if origin matches allowed list or is any localhost port
+        const isLocalhost = /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin);
+        if (allowedOrigins.includes(origin) || isLocalhost) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true
 }));
 // Parse incoming requests with JSON payloads

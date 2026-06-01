@@ -55,12 +55,12 @@ export const compareSkills = (resumeText: string, jdText: string) => {
   // 1. Identify what skills are required by the Job Description
   const requiredSkills = extractSkills(jdText);
   
-  // If no required skills are found in the JD, default to all matching dictionary skills found in the resume
+  // If no required skills are found in the JD, return empty matched and missing skills arrays
+  // (the AI will evaluate dynamic semantic overlap later, preventing false-positive 100% matches here)
   if (requiredSkills.length === 0) {
-    const resumeSkills = extractSkills(resumeText);
     return {
-      matchedSkills: resumeSkills,
-      missingSkills: [] // No JD skills identified means nothing is marked missing
+      matchedSkills: [],
+      missingSkills: []
     };
   }
 

@@ -5,15 +5,25 @@ dotenv.config();
 
 const { Pool } = pg;
 
+const connectionString = process.env.DATABASE_URL;
+
 // Active Sandbox Mode flag
-export let isSandboxMode = false;
+export let isSandboxMode = !connectionString || 
+                           connectionString.includes('YOUR_DATABASE_URL') || 
+                           process.env.USE_SANDBOX === 'true';
 
 export const setSandboxMode = (value: boolean) => {
   isSandboxMode = value;
   if (value) {
     console.log('🤖 [database-simulation]: Sandbox Mode active. Query execution is fully simulated in memory.');
+  } else {
+    console.log('🔌 [database]: Sandbox Mode deactivated.');
   }
 };
+
+if (isSandboxMode) {
+  console.log('🤖 [database-simulation]: Sandbox Mode initially active. Query execution is fully simulated in memory.');
+}
 
 // In-Memory Database storage structures for Sandbox Simulation
 const usersTable: any[] = [];
@@ -21,19 +31,13 @@ const analysesTable: any[] = [];
 let nextUserId = 1;
 let nextAnalysisId = 1;
 
-const connectionString = process.env.DATABASE_URL;
-
 export const pool = new Pool({
   connectionString,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 });
 
 pool.on('error', (err) => {
-  // If we catch connection issues on idle, trigger sandbox simulation fallback
-  if (!isSandboxMode) {
-    console.warn('⚠️ [database]: Idle client error. Activating Sandbox Simulator fallback.');
-    setSandboxMode(true);
-  }
+  console.error('⚠️ [database]: Unexpected idle database client error:', err.message || err);
 });
 
 /**
@@ -47,7 +51,7 @@ export const query = async (text: string, params?: any[]): Promise<any> => {
     return simulateQuery(normalizedQuery, params || []);
   }
 
-  // 2. Real Database execution with dynamic sandbox activation on failure
+  // 2. Real Database execution
   try {
     const start = Date.now();
     const res = await pool.query(text, params);
@@ -59,10 +63,8 @@ export const query = async (text: string, params?: any[]): Promise<any> => {
     
     return res;
   } catch (error: any) {
-    console.warn(`⚠️ [database-query-failed]: Database operation failed: ${error.message}. Switching to Sandbox Mode.`);
-    setSandboxMode(true);
-    // Execute simulated query immediately so the request succeeds
-    return simulateQuery(normalizedQuery, params || []);
+    console.error(`❌ [database-query-failed]: Database operation failed: ${error.message}`);
+    throw error;
   }
 };
 
