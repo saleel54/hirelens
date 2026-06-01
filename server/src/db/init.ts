@@ -63,6 +63,8 @@ export const initializeDatabase = async () => {
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE NOT NULL,
         job_role VARCHAR(255) NOT NULL,
+        job_description TEXT,
+        resume_file_name VARCHAR(255),
         ats_score INTEGER NOT NULL CHECK (ats_score BETWEEN 0 AND 100),
         resume_quality_score INTEGER NOT NULL CHECK (resume_quality_score BETWEEN 0 AND 100),
         scores_breakdown JSONB NOT NULL DEFAULT '{}'::jsonb,
@@ -75,6 +77,15 @@ export const initializeDatabase = async () => {
       );
     `);
     console.log('✅ [database]: Analyses table verified/created.');
+
+    // Run structural migration check to alter existing production database tables safely
+    try {
+      await query(`ALTER TABLE analyses ADD COLUMN IF NOT EXISTS job_description TEXT;`);
+      await query(`ALTER TABLE analyses ADD COLUMN IF NOT EXISTS resume_file_name VARCHAR(255);`);
+      console.log('✅ [database]: Analyses table migrations verified/applied.');
+    } catch (alterError: any) {
+      console.warn('⚠️ [database-migration]: Production structural check bypassed:', alterError.message || alterError);
+    }
 
     // Create Search/Foreign Key Indexes
     await query(`
