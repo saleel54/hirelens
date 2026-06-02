@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { apiClient } from '../services/api';
 import { 
   FileText, 
@@ -160,12 +161,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
       </div>
 
       {/* Stats Cards Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+      <motion.div
+        variants={{
+          hidden: { opacity: 0 },
+          show: {
+            opacity: 1,
+            transition: { staggerChildren: 0.06 }
+          }
+        }}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5"
+      >
         {statCards.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div 
+            <motion.div 
               key={idx}
+              variants={{
+                hidden: { opacity: 0, y: 15 },
+                show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 25 } }
+              }}
+              whileHover={{ y: -3, transition: { duration: 0.2 } }}
               className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 hover:shadow-md transition-all duration-200"
             >
               <div className="flex items-center justify-between">
@@ -180,10 +197,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
               <p className="text-xs text-secondary-light mt-2.5 flex items-center truncate">
                 {stat.subtext}
               </p>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -314,14 +331,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                     />
                     {/* Progress circle */}
-                    <path
+                    <motion.path
                       className="text-primary"
-                      strokeDasharray={`${highestATS}, 100`}
                       strokeWidth="3.5"
                       strokeLinecap="round"
                       stroke="currentColor"
                       fill="none"
                       d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: highestATS / 100 }}
+                      transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">

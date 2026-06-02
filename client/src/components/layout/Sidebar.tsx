@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, 
   Sparkles, 
@@ -146,17 +147,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
                   onTabChange(item.id);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 group cursor-pointer ${
+                className={`relative w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold group cursor-pointer transition-colors duration-200 ${
                   isActive 
-                    ? 'bg-gradient-to-r from-primary/8 via-primary/3 to-transparent text-primary border-l-3 border-primary' 
-                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50/80 dark:hover:bg-slate-800/30 hover:text-slate-800 dark:hover:text-slate-200'
+                    ? 'text-primary' 
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
               >
-                <div className="flex items-center space-x-3.5">
+                {isActive && (
+                  <motion.span
+                    layoutId="activeTabPillMobile"
+                    className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/3 to-transparent border-l-3 border-primary rounded-xl"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <div className="relative z-10 flex items-center space-x-3.5">
                   <Icon className={`w-5 h-5 ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`} />
                   <span className="tracking-tight">{item.label}</span>
                 </div>
-                {isActive && <ChevronRight className="w-4 h-4 text-primary" />}
+                {isActive && (
+                  <div className="relative z-10">
+                    <ChevronRight className="w-4 h-4 text-primary" />
+                  </div>
+                )}
               </button>
             );
           })}
@@ -241,17 +253,28 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
               <button
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 group cursor-pointer ${
+                className={`relative w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold group cursor-pointer transition-colors duration-300 ${
                   isActive 
-                    ? 'bg-gradient-to-r from-primary/8 via-primary/3 to-transparent text-primary border-l-3 border-primary shadow-[inset_1px_0_0_0_rgba(99,102,241,0.1)]' 
-                    : 'text-slate-500 hover:bg-slate-50/80 hover:text-slate-800'
+                    ? 'text-primary font-bold' 
+                    : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <div className="flex items-center space-x-3.5">
+                {isActive && (
+                  <motion.span
+                    layoutId="activeTabPillDesktop"
+                    className="absolute inset-0 bg-gradient-to-r from-primary/8 via-primary/3 to-transparent border-l-3 border-primary rounded-xl shadow-[inset_1px_0_0_0_rgba(99,102,241,0.1)]"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+                <div className="relative z-10 flex items-center space-x-3.5">
                   <Icon className={`w-5 h-5 transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'}`} />
                   <span className="tracking-tight">{item.label}</span>
                 </div>
-                {isActive && <ChevronRight className="w-4 h-4 text-primary animate-pulse" />}
+                {isActive && (
+                  <div className="relative z-10">
+                    <ChevronRight className="w-4 h-4 text-primary animate-pulse" />
+                  </div>
+                )}
               </button>
             );
           })}

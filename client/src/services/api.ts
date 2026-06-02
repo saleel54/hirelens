@@ -32,7 +32,9 @@ export const apiClient = async (endpoint: string, options: RequestInit = {}) => 
   
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || `API request failed with status ${response.status}`);
+    const error = new Error(errorData.message || `API request failed with status ${response.status}`) as any;
+    error.status = response.status;
+    throw error;
   }
 
   return response.json();

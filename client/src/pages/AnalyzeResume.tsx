@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sparkles, 
   Upload, 
@@ -221,17 +222,19 @@ export const AnalyzeResume: React.FC<AnalyzeResumeProps> = ({ onAnalysisSuccess 
                 </button>
               </div>
             ) : (
-              <div
+              <motion.div
                 onDragEnter={handleDrag}
                 onDragOver={handleDrag}
                 onDragLeave={handleDrag}
                 onDrop={handleDrop}
                 onClick={triggerUploadClick}
-                className={`w-full border-2 border-dashed rounded-xl py-10 px-4 text-center cursor-pointer transition-all ${
-                  isDragActive 
-                    ? 'border-primary bg-primary/5' 
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50/30'
-                }`}
+                animate={{
+                  scale: isDragActive ? 1.015 : 1,
+                  borderColor: isDragActive ? 'var(--color-primary)' : 'rgba(15, 23, 42, 0.1)',
+                  backgroundColor: isDragActive ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.5)'
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="w-full border-2 border-dashed rounded-xl py-10 px-4 text-center cursor-pointer"
               >
                 <input
                   ref={fileInputRef}
@@ -249,7 +252,7 @@ export const AnalyzeResume: React.FC<AnalyzeResumeProps> = ({ onAnalysisSuccess 
                 <p className="text-xs text-slate-400 mt-2">
                   Supports PDF format only. Maximum file size 5MB.
                 </p>
-              </div>
+              </motion.div>
             )}
           </div>
 
@@ -265,59 +268,86 @@ export const AnalyzeResume: React.FC<AnalyzeResumeProps> = ({ onAnalysisSuccess 
       </div>
 
       {/* Modern Multi-step Loading Modal */}
-      {loading && (
-        <div className="fixed inset-0 z-50 bg-secondary-dark/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full shadow-2xl p-8 space-y-6">
-            <div className="text-center">
-              <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-secondary-dark font-outfit">Analyzing Resume</h3>
-              <p className="text-xs text-secondary-light mt-1">Please wait while HireLens AI processes your credentials...</p>
-            </div>
+      <AnimatePresence>
+        {loading && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-secondary-dark/40 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="bg-white border border-slate-200 rounded-2xl max-w-md w-full shadow-2xl p-8 space-y-6"
+            >
+              <div className="text-center">
+                <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-secondary-dark font-outfit">Analyzing Resume</h3>
+                <p className="text-xs text-secondary-light mt-1">Please wait while HireLens AI processes your credentials...</p>
+              </div>
 
-            {/* Stepper tracker */}
-            <div className="space-y-4 pt-2">
-              {loadingSteps.map((step, idx) => {
-                const stepNum = idx + 1;
-                const isCompleted = loadingStep > stepNum;
-                const isCurrent = loadingStep === stepNum;
-                
-                return (
-                  <div key={idx} className="flex items-start space-x-3">
-                    <div className="shrink-0 mt-0.5">
-                      {isCompleted ? (
-                        <CheckCircle2 className="w-5 h-5 text-success fill-success/5" />
-                      ) : isCurrent ? (
-                        <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
-                      ) : (
-                        <div className="w-5 h-5 rounded-full border border-slate-200 text-slate-300 text-xs font-bold flex items-center justify-center select-none bg-slate-50">
-                          {stepNum}
-                        </div>
-                      )}
-                    </div>
-                    <span className={`text-xs font-semibold ${
-                      isCompleted 
-                        ? 'text-secondary-light line-through opacity-60' 
-                        : isCurrent 
-                          ? 'text-primary font-bold' 
-                          : 'text-slate-400'
-                    }`}>
-                      {step.label}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* Progress Bar indicator */}
-            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-              <div 
-                className="bg-primary h-full rounded-full transition-all duration-500 ease-out" 
-                style={{ width: `${(loadingStep / 5) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-      )}
+              {/* Stepper tracker */}
+              <div className="space-y-4 pt-2">
+                {loadingSteps.map((step, idx) => {
+                  const stepNum = idx + 1;
+                  const isCompleted = loadingStep > stepNum;
+                  const isCurrent = loadingStep === stepNum;
+                  
+                  return (
+                    <motion.div 
+                      key={idx} 
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="flex items-start space-x-3"
+                    >
+                      <div className="shrink-0 mt-0.5">
+                        {isCompleted ? (
+                          <motion.div
+                            initial={{ scale: 0.5 }}
+                            animate={{ scale: 1 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                          >
+                            <CheckCircle2 className="w-5 h-5 text-success fill-success/5" />
+                          </motion.div>
+                        ) : isCurrent ? (
+                          <div className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border border-slate-200 text-slate-300 text-xs font-bold flex items-center justify-center select-none bg-slate-50">
+                            {stepNum}
+                          </div>
+                        )}
+                      </div>
+                      <span className={`text-xs font-semibold ${
+                        isCompleted 
+                          ? 'text-secondary-light line-through opacity-60' 
+                          : isCurrent 
+                            ? 'text-primary font-bold' 
+                            : 'text-slate-400'
+                      }`}>
+                        {step.label}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+              
+              {/* Progress Bar indicator */}
+              <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                <motion.div 
+                  className="bg-primary h-full rounded-full" 
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${(loadingStep / 5) * 100}%` }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                ></motion.div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

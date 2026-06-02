@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Sparkles,
   User,
@@ -25,7 +26,12 @@ export const About: React.FC = () => {
       {/* Grid container */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Creator Profile Card (1/3 width) */}
-        <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group">
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.05 }}
+          className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 flex flex-col justify-between relative overflow-hidden group"
+        >
           <div className="absolute -right-12 -top-12 w-28 h-28 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-xl"></div>
 
           <div className="space-y-5">
@@ -70,20 +76,56 @@ export const About: React.FC = () => {
 
           <div className="mt-8 pt-5 border-t border-slate-100 space-y-2">
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Core Skillsets</span>
-            <div className="flex flex-wrap gap-1">
+            <motion.div 
+              variants={{
+                hidden: { opacity: 0 },
+                show: {
+                  opacity: 1,
+                  transition: { staggerChildren: 0.05 }
+                }
+              }}
+              initial="hidden"
+              animate="show"
+              className="flex flex-wrap gap-1"
+            >
               {['TypeScript', 'React', 'Node.js', 'Express', 'PostgreSQL', 'Gemini AI', 'Tailwind CSS'].map((tech) => (
-                <span key={tech} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/40">
+                <motion.span 
+                  key={tech} 
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.7 },
+                    show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 15 } }
+                  }}
+                  whileHover={{ scale: 1.08, y: -1 }}
+                  className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200/40 cursor-default"
+                >
                   {tech}
-                </span>
+                </motion.span>
               ))}
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Column: Narrative Copy (2/3 width) */}
-        <div className="lg:col-span-2 space-y-6">
+        <motion.div 
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: { staggerChildren: 0.08 }
+            }
+          }}
+          initial="hidden"
+          animate="show"
+          className="lg:col-span-2 space-y-6"
+        >
           {/* Main Story Panel */}
-          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+          <motion.div 
+            variants={{
+              hidden: { opacity: 0, y: 15 },
+              show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 18 } }
+            }}
+            className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4"
+          >
             <h2 className="text-lg font-bold text-secondary-dark font-outfit border-b border-slate-100 pb-2 flex items-center space-x-2">
               <User className="w-5 h-5 text-primary" />
               <span>About the Creator</span>
@@ -103,13 +145,19 @@ export const About: React.FC = () => {
                 This platform combines custom ATS analysis, skill-gap identification, AI-powered recommendations, and interview preparation tools to provide actionable insights that help users improve their chances of landing their dream job.
               </p>
               <p>
-                Every feature of HireLens AI — from resume parsing and ATS scoring to AI-generated suggestions and interview questions — was designed, developed, and deployed by me as a solo developer under <i>YAStudio"</i>.
+                Every feature of HireLens AI — from resume parsing and ATS scoring to AI-generated suggestions and interview questions — was designed, developed, and deployed by me as a solo developer under <i>YAStudio</i>.""
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* YAStudio Vision Panel */}
-          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+          <motion.div 
+            variants={{
+              hidden: { opacity: 0, y: 15 },
+              show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 18 } }
+            }}
+            className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4"
+          >
             <h2 className="text-lg font-bold text-secondary-dark font-outfit border-b border-slate-100 pb-2 flex items-center space-x-2">
               <Sparkles className="w-5 h-5 text-purple-500 fill-purple-500/10" />
               <span>About YAStudio</span>
@@ -123,10 +171,16 @@ export const About: React.FC = () => {
                 Our vision is to create products that empower people through technology, making advanced tools more accessible, useful, and impactful.
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Connect Panel */}
-          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
+          <motion.div 
+            variants={{
+              hidden: { opacity: 0, y: 15 },
+              show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 18 } }
+            }}
+            className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4"
+          >
             <h2 className="text-lg font-bold text-secondary-dark font-outfit border-b border-slate-100 pb-2 flex items-center space-x-2">
               <Mail className="w-5 h-5 text-indigo-500" />
               <span>Connect</span>
@@ -154,8 +208,8 @@ export const About: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

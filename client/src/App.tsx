@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthPages } from './pages/AuthPages';
 import { Sidebar } from './components/layout/Sidebar';
@@ -19,17 +20,22 @@ function AppContent() {
   const [activeReportData, setActiveReportData] = useState<any | null>(null);
 
   // Switch tab and clear active report view
-  const handleTabChange = (tab: TabName) => {
+  const handleTabChange = (tab: TabName, preventPush = false) => {
     setActiveTab(tab);
     setActiveReportData(null);
+    if (!preventPush) {
+      window.history.pushState({ tab }, '', '#' + tab);
+    }
   };
 
   // Triggers when user clicks "View Report" on history row or completes analysis
-  const handleViewReport = async (analysisId: number) => {
+  const handleViewReport = async (analysisId: number, preventPush = false) => {
     try {
-      // Set loader or fetch directly
       const data = await apiClient(`/analysis/history/${analysisId}`);
       setActiveReportData(data);
+      if (!preventPush) {
+        window.history.pushState({ tab: 'report', reportId: analysisId }, '', `#report-${analysisId}`);
+      }
     } catch (err) {
       console.error('Failed to retrieve analysis details:', err);
       alert('Failed to retrieve analysis details. Please try again.');
@@ -38,12 +44,56 @@ function AppContent() {
 
   const handleAnalysisSuccess = (analysisData: any) => {
     setActiveReportData(analysisData);
+    if (analysisData && analysisData.id) {
+      window.history.pushState({ tab: 'report', reportId: analysisData.id }, '', `#report-${analysisData.id}`);
+    }
   };
 
   const handleBackToDashboard = () => {
     setActiveReportData(null);
     setActiveTab('dashboard');
+    window.history.pushState({ tab: 'dashboard' }, '', '#dashboard');
   };
+
+  // Synchronize initial hash fragment and handle back/forward navigation popstate
+  useEffect(() => {
+    // 1. Establish/restore initial state from hash fragment
+    const hash = window.location.hash.replace('#', '');
+    const validTabs: TabName[] = ['dashboard', 'analyze', 'history', 'interview', 'about', 'profile'];
+    
+    if (hash.startsWith('report-')) {
+      const reportId = parseInt(hash.replace('report-', ''), 10);
+      if (!isNaN(reportId)) {
+        window.history.replaceState({ tab: 'report', reportId }, '', '#' + hash);
+        handleViewReport(reportId, true);
+      } else {
+        window.history.replaceState({ tab: 'dashboard' }, '', '#dashboard');
+      }
+    } else if (validTabs.includes(hash as TabName)) {
+      setActiveTab(hash as TabName);
+      window.history.replaceState({ tab: hash }, '', '#' + hash);
+    } else {
+      window.history.replaceState({ tab: 'dashboard' }, '', '#dashboard');
+    }
+
+    // 2. Popstate listener to handle browser back button
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state && event.state.tab) {
+        if (event.state.tab === 'report') {
+          handleViewReport(event.state.reportId, true);
+        } else {
+          setActiveTab(event.state.tab);
+          setActiveReportData(null);
+        }
+      } else {
+        setActiveTab('dashboard');
+        setActiveReportData(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // 1. Session check loader
   if (loading) {
@@ -71,47 +121,58 @@ function AppContent() {
 
       {/* Main Content Pane */}
       <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto lg:max-h-screen flex flex-col justify-between">
-        <div className="flex-1">
-          {activeReportData ? (
-            <Report 
-              data={activeReportData} 
-              onBackToDashboard={handleBackToDashboard}
-            />
-          ) : (
-            <>
-              {activeTab === 'dashboard' && (
-                <Dashboard 
-                  onTabChange={handleTabChange} 
-                  onViewReport={handleViewReport} 
+        <div className="flex-1 flex flex-col">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeReportData ? `report-${activeReportData.id}` : activeTab}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="flex-1 flex flex-col"
+            >
+              {activeReportData ? (
+                <Report 
+                  data={activeReportData} 
+                  onBackToDashboard={handleBackToDashboard}
                 />
-              )}
-              
-              {activeTab === 'analyze' && (
-                <AnalyzeResume 
-                  onAnalysisSuccess={handleAnalysisSuccess} 
-                />
-              )}
+              ) : (
+                <>
+                  {activeTab === 'dashboard' && (
+                    <Dashboard 
+                      onTabChange={handleTabChange} 
+                      onViewReport={handleViewReport} 
+                    />
+                  )}
+                  
+                  {activeTab === 'analyze' && (
+                    <AnalyzeResume 
+                      onAnalysisSuccess={handleAnalysisSuccess} 
+                    />
+                  )}
 
-              {activeTab === 'history' && (
-                <History 
-                  onTabChange={handleTabChange} 
-                  onViewReport={handleViewReport} 
-                />
-              )}
+                  {activeTab === 'history' && (
+                    <History 
+                      onTabChange={handleTabChange} 
+                      onViewReport={handleViewReport} 
+                    />
+                  )}
 
-              {activeTab === 'interview' && (
-                <MockInterview />
-              )}
+                  {activeTab === 'interview' && (
+                    <MockInterview />
+                  )}
 
-              {activeTab === 'about' && (
-                <About />
-              )}
+                  {activeTab === 'about' && (
+                    <About />
+                  )}
 
-              {activeTab === 'profile' && (
-                <Profile />
+                  {activeTab === 'profile' && (
+                    <Profile />
+                  )}
+                </>
               )}
-            </>
-          )}
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         {/* Global Luxury Branding Footer */}
