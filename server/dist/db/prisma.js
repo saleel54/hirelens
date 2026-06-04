@@ -249,8 +249,8 @@ exports.dbService = {
             if (!roadmap)
                 return [];
             const missions = [];
-            roadmap.modules.forEach(m => {
-                m.weeklyMissions.forEach(w => {
+            roadmap.modules.forEach((m) => {
+                m.weeklyMissions.forEach((w) => {
                     missions.push({
                         ...w,
                         monthNumber: m.monthNumber,
