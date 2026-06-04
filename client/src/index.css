@@ -276,11 +276,20 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* Contrast enhancement overrides for labels inside glass cards in Light Mode */
-.glass-card .text-slate-400 {
-  color: #64748b !important; /* slate-500 */
+.glass-card .text-slate-800 {
+  color: #0f172a !important; /* Force dark charcoal in Light Mode */
+}
+.glass-card .text-slate-700 {
+  color: #1e293b !important;
+}
+.glass-card .text-slate-600 {
+  color: #334155 !important;
 }
 .glass-card .text-slate-500 {
-  color: #475569 !important; /* slate-600 */
+  color: #475569 !important;
+}
+.glass-card .text-slate-400 {
+  color: #64748b !important;
 }
 
 /* Dark Mode overrides for glass cards and labels */
@@ -301,11 +310,20 @@ input:focus, textarea:focus, select:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
-.dark .glass-card .text-slate-400 {
-  color: #94a3b8 !important; /* slate-400 in dark mode */
+.dark .glass-card .text-slate-800 {
+  color: #f8fafc !important; /* Force light in Dark Mode */
+}
+.dark .glass-card .text-slate-700 {
+  color: #f1f5f9 !important;
+}
+.dark .glass-card .text-slate-600 {
+  color: #e2e8f0 !important;
 }
 .dark .glass-card .text-slate-500 {
-  color: #94a3b8 !important; /* slate-400 in dark mode */
+  color: #cbd5e1 !important;
+}
+.dark .glass-card .text-slate-400 {
+  color: #94a3b8 !important;
 }
 
 /* AI Action Gradient with Luminous Bloom shadow */
