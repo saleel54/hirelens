@@ -8,6 +8,7 @@ import { Dashboard } from './pages/Dashboard';
 import { MockInterview } from './pages/MockInterview';
 import { About } from './pages/About';
 import { AnalyzeResume } from './pages/AnalyzeResume';
+import { History } from './pages/History';
 import { Profile } from './pages/Profile';
 import { Report } from './pages/Report';
 import { CareerCopilot } from './pages/CareerCopilot';
@@ -59,7 +60,7 @@ function AppContent() {
   useEffect(() => {
     // 1. Establish/restore initial state from hash fragment
     const hash = window.location.hash.replace('#', '');
-    const validTabs: TabName[] = ['dashboard', 'analyze', 'copilot', 'interview', 'about', 'profile'];
+    const validTabs: TabName[] = ['dashboard', 'analyze', 'history', 'copilot', 'interview', 'about', 'profile'];
     
     if (hash.startsWith('report-')) {
       const reportId = parseInt(hash.replace('report-', ''), 10);
@@ -148,6 +149,13 @@ function AppContent() {
                   {activeTab === 'analyze' && (
                     <AnalyzeResume 
                       onAnalysisSuccess={handleAnalysisSuccess} 
+                    />
+                  )}
+                  
+                  {activeTab === 'history' && (
+                    <History 
+                      onTabChange={handleTabChange} 
+                      onViewReport={handleViewReport} 
                     />
                   )}
                   

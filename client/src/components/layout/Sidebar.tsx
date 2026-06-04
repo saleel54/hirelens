@@ -12,11 +12,12 @@ import {
   Info,
   Menu,
   X,
-  Compass
+  Compass,
+  History
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
-export type TabName = 'dashboard' | 'analyze' | 'copilot' | 'interview' | 'about' | 'profile';
+export type TabName = 'dashboard' | 'analyze' | 'history' | 'copilot' | 'interview' | 'about' | 'profile';
 
 interface SidebarProps {
   activeTab: TabName;
@@ -50,6 +51,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const navItems = [
     { id: 'dashboard' as TabName, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'analyze' as TabName, label: 'Analyze Resume', icon: Sparkles },
+    { id: 'history' as TabName, label: 'Resume History', icon: History },
     { id: 'copilot' as TabName, label: 'Career Copilot', icon: Compass },
     { id: 'interview' as TabName, label: 'AI Mock Interview', icon: BookOpen },
     { id: 'about' as TabName, label: 'About YAStudio', icon: Info },
