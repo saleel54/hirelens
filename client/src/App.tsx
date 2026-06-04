@@ -5,12 +5,12 @@ import { AuthPages } from './pages/AuthPages';
 import { Sidebar } from './components/layout/Sidebar';
 import type { TabName } from './components/layout/Sidebar';
 import { Dashboard } from './pages/Dashboard';
-import { History } from './pages/History';
 import { MockInterview } from './pages/MockInterview';
 import { About } from './pages/About';
 import { AnalyzeResume } from './pages/AnalyzeResume';
 import { Profile } from './pages/Profile';
 import { Report } from './pages/Report';
+import { CareerCopilot } from './pages/CareerCopilot';
 import { Loader2 } from 'lucide-react';
 import { apiClient } from './services/api';
 
@@ -59,7 +59,7 @@ function AppContent() {
   useEffect(() => {
     // 1. Establish/restore initial state from hash fragment
     const hash = window.location.hash.replace('#', '');
-    const validTabs: TabName[] = ['dashboard', 'analyze', 'history', 'interview', 'about', 'profile'];
+    const validTabs: TabName[] = ['dashboard', 'analyze', 'copilot', 'interview', 'about', 'profile'];
     
     if (hash.startsWith('report-')) {
       const reportId = parseInt(hash.replace('report-', ''), 10);
@@ -150,11 +150,10 @@ function AppContent() {
                       onAnalysisSuccess={handleAnalysisSuccess} 
                     />
                   )}
-
-                  {activeTab === 'history' && (
-                    <History 
+                  
+                  {activeTab === 'copilot' && (
+                    <CareerCopilot 
                       onTabChange={handleTabChange} 
-                      onViewReport={handleViewReport} 
                     />
                   )}
 

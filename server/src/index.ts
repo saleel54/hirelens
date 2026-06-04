@@ -5,6 +5,7 @@ import { initializeDatabase } from './db/init.js';
 import { setSandboxMode } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import analysisRoutes from './routes/analysisRoutes.js';
+import copilotRoutes from './routes/copilotRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -37,6 +38,7 @@ app.use(express.json());
 // Register API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/analysis', analysisRoutes);
+app.use('/api/copilot', copilotRoutes);
 
 // Standard API health endpoint
 app.get('/health', (req: Request, res: Response) => {

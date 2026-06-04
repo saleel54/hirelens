@@ -399,3 +399,266 @@ function getMockEvaluation(question: string, answer: string): GeminiEvaluationRe
     suggestedAnswer: "A stellar answer should structure your experience clearly. For example: 'In my last role, we had a bottleneck where our database queries were taking up to 4s. I identified missing indexes on the foreign keys, analyzed the execution plans, and refactored our queries to reduce loading time by 80% to 200ms.'"
   };
 }
+
+export interface GeminiCopilotResponse {
+  roadmapTitle: string;
+  roadmapDescription: string;
+  modules: {
+    monthNumber: number;
+    title: string;
+    description: string;
+    skillsToLearn: string[];
+    projectTitle: string;
+    projectDescription: string;
+    weeks: {
+      weekNumber: number;
+      title: string;
+      tasks: string[];
+    }[];
+  }[];
+  projectRecommendations: {
+    name: string;
+    description: string;
+    difficulty: string;
+    skillsDemonstrated: string[];
+    estimatedCompletionTime: string;
+  }[];
+  estimatedJobReadyWeeks: number;
+  nextSteps: string[];
+}
+
+const copilotSchema = {
+  type: "OBJECT",
+  properties: {
+    roadmapTitle: { type: "STRING" },
+    roadmapDescription: { type: "STRING" },
+    modules: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          monthNumber: { type: "INTEGER" },
+          title: { type: "STRING" },
+          description: { type: "STRING" },
+          skillsToLearn: { type: "ARRAY", items: { type: "STRING" } },
+          projectTitle: { type: "STRING" },
+          projectDescription: { type: "STRING" },
+          weeks: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                weekNumber: { type: "INTEGER" },
+                title: { type: "STRING" },
+                tasks: { type: "ARRAY", items: { type: "STRING" } }
+              },
+              required: ["weekNumber", "title", "tasks"]
+            }
+          }
+        },
+        required: ["monthNumber", "title", "description", "skillsToLearn", "projectTitle", "projectDescription", "weeks"]
+      }
+    },
+    projectRecommendations: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          name: { type: "STRING" },
+          description: { type: "STRING" },
+          difficulty: { type: "STRING" },
+          skillsDemonstrated: { type: "ARRAY", items: { type: "STRING" } },
+          estimatedCompletionTime: { type: "STRING" }
+        },
+        required: ["name", "description", "difficulty", "skillsDemonstrated", "estimatedCompletionTime"]
+      }
+    },
+    estimatedJobReadyWeeks: { type: "INTEGER" },
+    nextSteps: { type: "ARRAY", items: { type: "STRING" } }
+  },
+  required: [
+    "roadmapTitle",
+    "roadmapDescription",
+    "modules",
+    "projectRecommendations",
+    "estimatedJobReadyWeeks",
+    "nextSteps"
+  ]
+};
+
+export const generateCareerCopilotRoadmap = async (
+  targetRole: string,
+  timelineMonths: number,
+  skillLevel: string,
+  hoursPerDay: number,
+  preferredStyle: string,
+  currentSkills: string[],
+  resumeData?: {
+    matchedSkills: string[];
+    missingSkills: string[];
+    atsScore: number;
+    resumeQualityScore: number;
+  }
+): Promise<GeminiCopilotResponse> => {
+  if (!ai) {
+    return getFallbackCopilotData(targetRole, timelineMonths, skillLevel, hoursPerDay, preferredStyle, currentSkills);
+  }
+
+  const prompt = `
+    You are an AI Career Copilot and Senior Learning Architect. Generate a hyper-personalized, week-by-week and month-by-month career roadmap, project recommendations, and action plan.
+
+    TARGET CAREER PROFILE:
+    - Target Role: "${targetRole}"
+    - Timeline target: ${timelineMonths} Months
+    - Current Skill Level: "${skillLevel}"
+    - Daily Study Availability: ${hoursPerDay} hours/day
+    - Preferred Learning Style: "${preferredStyle}"
+    - Current Manual Skills: [${currentSkills.join(', ')}]
+
+    ${resumeData ? `
+    CANDIDATE RESUME METRICS:
+    - ATS Score: ${resumeData.atsScore}%
+    - Resume Quality: ${resumeData.resumeQualityScore}%
+    - Verified Matched Skills: [${resumeData.matchedSkills.join(', ')}]
+    - Identified Skill Gaps (Missing): [${resumeData.missingSkills.join(', ')}]
+    ` : ''}
+
+    INSTRUCTIONS:
+    1. Create a custom roadmap for the target role spanning exactly ${timelineMonths} months.
+    2. Each month should have 1 topic/title, skillsToLearn (aligned with the target role and filling identified skill gaps), a practical month-long project (with Title and Description), and exactly 4 weeks of detailed weekly missions.
+    3. Each week must have a title and a list of 3-4 highly specific, actionable tasks (e.g. watch specific topics, build specific small components, do exercises, practice questions).
+    4. Provide exactly 3 major custom recommended projects (easy, medium, hard) tailored to their target role and skill gaps. Each project must detail difficulty, skills demonstrated, and estimated completion time.
+    5. Calculate an estimated job-ready timeline in weeks, taking into account their hours per day and timeline.
+    6. Provide a list of the next 3 immediate next steps to kickstart their journey.
+    7. Generate and return the response matching the specified JSON schema.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: 'application/json',
+        responseSchema: copilotSchema as any
+      }
+    });
+
+    const responseText = response.text;
+    if (!responseText) {
+      throw new Error('Received empty response text from Gemini API for Copilot Roadmap');
+    }
+
+    const parsedResult = JSON.parse(responseText) as GeminiCopilotResponse;
+    return parsedResult;
+
+  } catch (error: any) {
+    console.error('❌ [gemini-copilot-failed]: Failed calling Gemini API, using fallback:', error.message || error);
+    return getFallbackCopilotData(targetRole, timelineMonths, skillLevel, hoursPerDay, preferredStyle, currentSkills);
+  }
+};
+
+function getFallbackCopilotData(
+  targetRole: string,
+  timelineMonths: number,
+  skillLevel: string,
+  hoursPerDay: number,
+  preferredStyle: string,
+  currentSkills: string[]
+): GeminiCopilotResponse {
+  console.log(`ℹ️ [gemini-fallback]: Generating fallback copilot roadmap for role: ${targetRole}`);
+
+  const modules: GeminiCopilotResponse['modules'] = [];
+  
+  for (let m = 1; m <= timelineMonths; m++) {
+    const skills = [
+      `Core skill A for month ${m}`,
+      `Tools and standards for month ${m}`,
+      `Methodologies for month ${m}`
+    ];
+    
+    modules.push({
+      monthNumber: m,
+      title: `Month ${m}: Foundational ${targetRole} Core Concepts`,
+      description: `Understand the core principles, tooling, and architectures required in Month ${m} of your journey to become a ${targetRole}.`,
+      skillsToLearn: skills,
+      projectTitle: `Project for Month ${m}`,
+      projectDescription: `Build a production-grade application showcasing the skills learned in Month ${m}.`,
+      weeks: [
+        {
+          weekNumber: 1,
+          title: `Week 1: Core Fundamentals`,
+          tasks: [
+            `Read official documentation and quickstarts for Month ${m} technologies.`,
+            `Set up your development environment and configuration configurations.`,
+            `Build a basic hello-world playground application.`
+          ]
+        },
+        {
+          weekNumber: 2,
+          title: `Week 2: Advanced Topics & Integration`,
+          tasks: [
+            `Understand routing, layout structures, and styling systems.`,
+            `Integrate external mock data or standard mock APIs.`,
+            `Implement proper error boundaries and debug setups.`
+          ]
+        },
+        {
+          weekNumber: 3,
+          title: `Week 3: Project Architecture`,
+          tasks: [
+            `Design the database schemas or component interfaces for the monthly project.`,
+            `Write core custom components and hooks.`,
+            `Implement form validation, authentication patterns, or state handlers.`
+          ]
+        },
+        {
+          weekNumber: 4,
+          title: `Week 4: Finalizing & Testing`,
+          tasks: [
+            `Add comprehensive unit and integration tests.`,
+            `Optimize loading times, file sizes, and asset bundles.`,
+            `Deploy the project to a public host (e.g. Vercel, Netlify, Render).`
+          ]
+        }
+      ]
+    });
+  }
+
+  const projectRecommendations: GeminiCopilotResponse['projectRecommendations'] = [
+    {
+      name: `Core CLI tool for ${targetRole}`,
+      description: `A lightweight developer tool to automate key developer workflows using Node/Python.`,
+      difficulty: `Easy`,
+      skillsDemonstrated: [currentSkills[0] || 'JavaScript', 'Terminal scripting', 'File IO'],
+      estimatedCompletionTime: `6 hours`
+    },
+    {
+      name: `Premium Dashboard cockpit`,
+      description: `A responsive administrative portal featuring charts, lists, details panels, and CSV export functionality.`,
+      difficulty: `Medium`,
+      skillsDemonstrated: [currentSkills[0] || 'JavaScript', 'React', 'Tailwind CSS', 'Recharts'],
+      estimatedCompletionTime: `25 hours`
+    },
+    {
+      name: `Production-grade ${targetRole} SaaS`,
+      description: `A complete full-stack product integrating authentication, subscription plans, database queries, and AI helper modules.`,
+      difficulty: `Hard`,
+      skillsDemonstrated: ['Node.js', 'Express.js', 'PostgreSQL', 'Prisma ORM', 'JWT authentication'],
+      estimatedCompletionTime: `60 hours`
+    }
+  ];
+
+  return {
+    roadmapTitle: `Personalized AI Roadmap to become a ${targetRole}`,
+    roadmapDescription: `This is your personalized, custom path designed by our Career Copilot. It targets your timelines, addresses skill gaps, and matches your learning style.`,
+    modules,
+    projectRecommendations,
+    estimatedJobReadyWeeks: timelineMonths * 4 + 2,
+    nextSteps: [
+      `Read and understand Month 1: Foundational core concepts.`,
+      `Set up your GitHub repository and link your local dev environment.`,
+      `Start your very first weekly mission: Core Fundamentals.`
+    ]
+  };
+}
+

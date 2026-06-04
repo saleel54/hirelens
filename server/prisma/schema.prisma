@@ -1,0 +1,164 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                 Int                  @id @default(autoincrement())
+  name               String               @db.VarChar(255)
+  email              String               @unique @db.VarChar(255)
+  password           String               @db.VarChar(255)
+  createdAt          DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  analyses           Analysis[]
+  careerGoals        CareerGoal[]
+  userProgress       UserProgress[]
+  jobReadinessScores JobReadinessScore[]
+  interviewSessions  InterviewSession[]
+
+  @@map("users")
+}
+
+model Analysis {
+  id                   Int      @id @default(autoincrement())
+  userId               Int      @map("user_id")
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobRole              String   @map("job_role") @db.VarChar(255)
+  jobDescription       String?  @map("job_description")
+  resumeFileName       String?  @map("resume_file_name") @db.VarChar(255)
+  atsScore             Int      @map("ats_score")
+  resumeQualityScore   Int      @map("resume_quality_score")
+  scoresBreakdown      Json     @default("{}") @map("scores_breakdown")
+  matchedSkills        Json     @default("[]") @map("matched_skills")
+  missingSkills        Json     @default("[]") @map("missing_skills")
+  resumeQualityDetails Json     @default("{}") @map("resume_quality_details")
+  suggestions          Json     @default("{}")
+  interviewQuestions   Json     @default("{}") @map("interview_questions")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("analyses")
+}
+
+model CareerGoal {
+  id                     Int                     @id @default(autoincrement())
+  userId                 Int                     @map("user_id")
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  targetRole             String                  @map("target_role") @db.VarChar(255)
+  timelineMonths         Int                     @map("timeline_months")
+  currentSkillLevel      String                  @map("current_skill_level") @db.VarChar(50) // Beginner, Learning, Developing
+  hoursPerDay            Float                   @map("hours_per_day")
+  preferredLearningStyle String                  @map("preferred_learning_style") @db.VarChar(50)
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime                @updatedAt @map("updated_at") @db.Timestamptz
+  roadmaps               Roadmap[]
+  projectRecommendations ProjectRecommendation[]
+
+  @@map("career_goals")
+}
+
+model Roadmap {
+  id          Int             @id @default(autoincrement())
+  goalId      Int             @map("goal_id")
+  goal        CareerGoal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId      Int             @map("user_id")
+  title       String          @db.VarChar(255)
+  description String?
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  modules     RoadmapModule[]
+
+  @@map("roadmaps")
+}
+
+model RoadmapModule {
+  id                 Int             @id @default(autoincrement())
+  roadmapId          Int             @map("roadmap_id")
+  roadmap            Roadmap         @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+  monthNumber        Int             @map("month_number")
+  title              String          @db.VarChar(255)
+  description        String
+  skillsToLearn      Json            @map("skills_to_learn") // String[]
+  projectTitle       String          @map("project_title") @db.VarChar(255)
+  projectDescription String          @map("project_description")
+  createdAt          DateTime        @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime        @updatedAt @map("updated_at") @db.Timestamptz
+  weeklyMissions     WeeklyMission[]
+
+  @@map("roadmap_modules")
+}
+
+model WeeklyMission {
+  id          Int           @id @default(autoincrement())
+  moduleId    Int           @map("module_id")
+  module      RoadmapModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  weekNumber  Int           @map("week_number")
+  title       String        @db.VarChar(255)
+  tasks       Json          // Array of { id: string, text: string, status: "Pending" | "In_Progress" | "Completed" }
+  status      String        @default("Pending") @db.VarChar(50) // Pending, In_Progress, Completed
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("weekly_missions")
+}
+
+model ProjectRecommendation {
+  id                      Int        @id @default(autoincrement())
+  goalId                  Int        @map("goal_id")
+  goal                    CareerGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  name                    String     @db.VarChar(255)
+  description             String
+  difficulty              String     @db.VarChar(50) // Easy, Medium, Hard
+  skillsDemonstrated      Json       @map("skills_demonstrated") // String[]
+  estimatedCompletionTime String     @map("estimated_completion_time") @db.VarChar(100)
+  status                  String     @default("Pending") @db.VarChar(50) // Pending, In_Progress, Completed
+  createdAt               DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@map("project_recommendations")
+}
+
+model UserProgress {
+  id                     Int      @id @default(autoincrement())
+  userId                 Int      @map("user_id")
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  completedTasksCount    Int      @default(0) @map("completed_tasks_count")
+  totalTasksCount        Int      @default(0) @map("total_tasks_count")
+  completedProjectsCount Int      @default(0) @map("completed_projects_count")
+  totalProjectsCount     Int      @default(0) @map("total_projects_count")
+  completedModulesCount  Int      @default(0) @map("completed_modules_count")
+  totalModulesCount      Int      @default(0) @map("total_modules_count")
+  lastCalculatedAt       DateTime @default(now()) @map("last_calculated_at") @db.Timestamptz
+
+  @@map("user_progress")
+}
+
+model JobReadinessScore {
+  id                     Int      @id @default(autoincrement())
+  userId                 Int      @map("user_id")
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overallScore           Float    @map("overall_score")
+  resumeScore            Float    @map("resume_score")
+  skillScore             Float    @map("skill_score")
+  projectScore           Float    @map("project_score")
+  interviewScore         Float    @map("interview_score")
+  improvementSuggestions Json     @map("improvement_suggestions") // String[]
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("job_readiness_scores")
+}
+
+model InterviewSession {
+  id                      Int      @id @default(autoincrement())
+  userId                  Int      @map("user_id")
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobRole                 String   @map("job_role") @db.VarChar(255)
+  completedQuestionsCount Int      @default(0) @map("completed_questions_count")
+  averageScore            Float    @default(0.0) @map("average_score")
+  sessions                Json     @default("[]") // Array of evaluated questions
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("interview_sessions")
+}

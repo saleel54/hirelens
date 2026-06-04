@@ -4,6 +4,8 @@ import { query } from '../config/db.js';
 import { parseResumePDF } from '../services/parser.js';
 import { calculateATSScore } from '../services/atsEngine.js';
 import { generateAIFeedback, evaluateInterviewResponse } from '../services/gemini.js';
+import { dbService } from '../db/prisma.js';
+import { recalculateJobReadiness } from './copilotController.js';
 
 /**
  * Executes a full end-to-end resume analysis audit
@@ -88,6 +90,11 @@ export const analyzeResume = async (req: AuthRequest, res: Response) => {
     );
 
     const savedRecord = dbResult.rows[0];
+
+    // Recalculate Job Readiness Score dynamically when a new resume is analyzed
+    await recalculateJobReadiness(req.user.id).catch(err => {
+      console.error('⚠️ Failed to recalculate job readiness after resume analysis:', err);
+    });
 
     // Return full computed analytical context to user
     return res.status(200).json({
@@ -232,11 +239,27 @@ export const evaluateAnswer = async (req: AuthRequest, res: Response) => {
   }
 
   try {
+    const role = jobRole ? jobRole.trim() : 'Software Engineer';
+    
     const evaluation = await evaluateInterviewResponse(
       question.trim(),
       answer.trim(),
-      jobRole ? jobRole.trim() : 'Software Engineer'
+      role
     );
+
+    // Save mock interview details to the database to track practice progress
+    await dbService.saveInterviewSession(
+      req.user.id,
+      role,
+      question.trim(),
+      answer.trim(),
+      evaluation.score,
+      evaluation.feedback,
+      evaluation.suggestedAnswer
+    );
+
+    // Recalculate Job Readiness Score including the new interview progress
+    await recalculateJobReadiness(req.user.id);
 
     return res.status(200).json(evaluation);
 
