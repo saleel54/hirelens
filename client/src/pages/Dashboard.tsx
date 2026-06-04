@@ -9,8 +9,7 @@ import {
   Compass,
   Map,
   CheckSquare,
-  FolderKanban,
-  Loader2
+  FolderKanban
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -213,17 +212,87 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
 
   if (loading) {
     return (
-      <div className="py-32 text-center text-sm font-semibold text-slate-400 flex flex-col items-center justify-center space-y-3">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span>Synthesizing dashboard cockpit telemetry...</span>
+      <div className="space-y-8 animate-pulse-slow">
+        {/* Welcome Header Skeleton */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="space-y-2">
+            <div className="h-8 w-56 bg-slate-200 dark:bg-slate-800/40 rounded-xl" />
+            <div className="h-4 w-96 max-w-full bg-slate-200 dark:bg-slate-800/40 rounded-lg" />
+          </div>
+          <div className="flex space-x-3 shrink-0">
+            <div className="h-10 w-28 bg-slate-200 dark:bg-slate-800/40 rounded-xl" />
+            <div className="h-10 w-36 bg-slate-200 dark:bg-slate-800/40 rounded-xl" />
+          </div>
+        </div>
+
+        {/* GPS Banner Skeleton */}
+        <div className="h-36 w-full bg-slate-200/30 dark:bg-slate-850/20 rounded-2xl border border-slate-200/50 dark:border-slate-800/30" />
+
+        {/* Stats Grid Skeletons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="glass-card rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800/40 rounded" />
+                <div className="h-7 w-7 bg-slate-200 dark:bg-slate-800/40 rounded-lg" />
+              </div>
+              <div className="h-7 w-12 bg-slate-300 dark:bg-slate-700/40 rounded-lg" />
+              <div className="h-2 w-28 bg-slate-200 dark:bg-slate-800/40 rounded" />
+            </div>
+          ))}
+        </div>
+
+        {/* Main Columns Skeletons */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            <div className="glass-card rounded-2xl p-6 space-y-4">
+              <div className="h-4 w-40 bg-slate-200 dark:bg-slate-800/40 rounded" />
+              <div className="space-y-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-14 w-full bg-slate-100/50 dark:bg-slate-850/20 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="glass-card rounded-2xl p-6 space-y-4">
+            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800/40 rounded" />
+            <div className="space-y-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-10 w-full bg-slate-100/50 dark:bg-slate-850/20 rounded-lg" />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
+  // Animation configurations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
+  };
+
   return (
-    <div className="space-y-8 animate-fadeIn">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-8 selection:bg-primary/20"
+    >
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-secondary-dark dark:text-white tracking-tight font-outfit">
             Good day, {user?.name.split(' ')[0]} 👋
@@ -233,7 +302,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
           </p>
         </div>
         
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 shrink-0">
           <button
             onClick={() => onTabChange('analyze')}
             className="px-4.5 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-xl flex items-center space-x-2 shadow-md shadow-primary/10 hover:shadow-lg hover:shadow-primary/20 transition-all cursor-pointer shrink-0"
@@ -251,16 +320,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
             </button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* ==========================================
           HEADER WIDGET: ACTIVE CAREER GPS ROUTE
           ========================================== */}
       {goal && gps && (
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glowing-border-active rounded-2xl p-6 relative overflow-hidden shadow-lg group"
+          variants={itemVariants}
+          className="glowing-border-active rounded-2xl p-6 relative overflow-hidden shadow-lg group border border-transparent"
         >
           <div className="absolute -right-20 -top-20 w-44 h-44 bg-primary/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/20 transition-all duration-300"></div>
 
@@ -314,7 +382,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Card 1: ATS Score */}
-        <div className="glass-card rounded-2xl p-5">
+        <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wide uppercase">Latest ATS Score</span>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-indigo-50 dark:bg-indigo-950/40 text-primary">
@@ -327,10 +395,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
           <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-2.5 flex items-center truncate">
             Based on {totalAnalyses} historical audits
           </p>
-        </div>
+        </motion.div>
 
         {/* Card 2: Job Readiness Score */}
-        <div className="glass-card rounded-2xl p-5">
+        <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wide uppercase">Job Readiness</span>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-emerald-50 dark:bg-emerald-950/40 text-success">
@@ -345,10 +413,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
           <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-2.5 flex items-center truncate">
             Proprietary weighted career score
           </p>
-        </div>
+        </motion.div>
 
         {/* Card 3: Completed Tasks */}
-        <div className="glass-card rounded-2xl p-5">
+        <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wide uppercase">Roadmap Checklist</span>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-amber-50 dark:bg-amber-950/40 text-warning">
@@ -362,17 +430,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
                 : '0'
               }
             </span>
-            <span className="text-xs text-slate-400 ml-1.5">
+            <span className="text-xs text-slate-400 ml-1.5 font-bold">
               / {missions.reduce((acc, m) => acc + m.tasks.length, 0)} Tasks
             </span>
           </div>
           <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-2.5 flex items-center truncate">
             Weekly mission checkpoints completed
           </p>
-        </div>
+        </motion.div>
 
         {/* Card 4: Recommended Projects */}
-        <div className="glass-card rounded-2xl p-5">
+        <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 hover-lift">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 tracking-wide uppercase">Portfolio Projects</span>
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-rose-50 dark:bg-rose-950/40 text-rose-500">
@@ -383,12 +451,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
             <span className="text-3xl font-extrabold text-slate-800 dark:text-slate-100 tracking-tight font-outfit">
               {projects.length > 0 ? `${projects.filter(p => p.status === 'Completed').length}` : '0'}
             </span>
-            <span className="text-xs text-slate-400 ml-1.5">/ {projects.length} Built</span>
+            <span className="text-xs text-slate-400 ml-1.5 font-bold">/ {projects.length} Built</span>
           </div>
           <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-2.5 flex items-center truncate">
             Deployments validated on database
           </p>
-        </div>
+        </motion.div>
 
       </div>
 
@@ -398,7 +466,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left Column (2/3 width): Evaluations & Roadmaps */}
-        <div className="lg:col-span-2 space-y-6">
+        <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
           
           {/* Recent Evaluations widget */}
           <div className="glass-card rounded-2xl p-6">
@@ -419,19 +487,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
             </div>
 
             {totalAnalyses === 0 ? (
-              <div className="py-10 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
-                <p className="text-xs font-bold text-slate-400">No resumes uploaded yet.</p>
-                <button
-                  onClick={() => onTabChange('analyze')}
-                  className="px-4.5 py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/15 rounded-lg cursor-pointer"
-                >
-                  Parse First Resume
-                </button>
+              <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 p-6 sm:p-8 text-center shadow-xs">
+                {/* Floating illustrative gradient circles */}
+                <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="absolute -right-16 -top-16 w-36 h-36 bg-purple-500/10 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
+                
+                <div className="max-w-md mx-auto space-y-4 relative z-10">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-indigo-600 p-[1.5px] mx-auto shadow-md shadow-primary/10">
+                    <div className="w-full h-full bg-slate-50 dark:bg-slate-955 rounded-[14px] flex items-center justify-center text-primary dark:text-cyan-400">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h4 className="text-sm font-extrabold text-slate-850 dark:text-slate-200 font-outfit">Unlock Resume Audit Engine</h4>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                      Evaluate your resume match scoring instantly. Our deep parsing simulation benchmarks your credentials against top technical domains and generates target upgrades.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => onTabChange('analyze')}
+                    className="px-5 py-2.5 text-xs font-bold text-white btn-ai-bloom rounded-xl cursor-pointer shadow-lg inline-flex items-center space-x-1.5"
+                  >
+                    <span>Audit Your Resume</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             ) : (
               <div className="space-y-3">
                 {history.slice(0, 3).map((record) => (
-                  <div
+                  <motion.div
+                    variants={itemVariants}
                     key={record.id}
                     onClick={() => onViewReport(record.id)}
                     className="flex items-center justify-between p-3.5 rounded-xl border border-slate-100 dark:border-slate-800/40 bg-slate-50/20 dark:bg-slate-950/10 hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-all cursor-pointer group"
@@ -462,7 +548,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
                         <ArrowUpRight className="w-3.5 h-3.5" />
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -487,9 +573,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {roadmap.modules.slice(0, 2).map((m: any) => (
-                  <div 
+                  <motion.div 
+                    variants={itemVariants}
                     key={m.id}
-                    className="p-4 rounded-xl border border-slate-100 dark:border-slate-800/40 bg-slate-50/10 dark:bg-slate-950/20 space-y-3"
+                    className="p-4 rounded-xl border border-slate-100 dark:border-slate-800/40 bg-slate-50/10 dark:bg-slate-955/20 space-y-3"
                   >
                     <div className="flex items-center space-x-2">
                       <span className="px-2 py-0.5 rounded text-[9px] font-black bg-primary/10 border border-primary/20 text-primary">
@@ -501,16 +588,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
                       <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Milestone Project</span>
                       <h4 className="text-xs font-extrabold text-slate-800 dark:text-slate-200 font-outfit leading-tight mt-0.5">{m.projectTitle}</h4>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>
           )}
 
-        </div>
+        </motion.div>
 
         {/* Right Column (1/3 width): Dials & Missions checklist */}
-        <div className="space-y-6">
+        <motion.div variants={itemVariants} className="space-y-6">
           
           {/* Job readiness breakdown dials */}
           {readinessBreakdown && (
@@ -536,15 +623,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
             </div>
 
             {!goal ? (
-              <div className="py-12 text-center text-xs text-slate-400 italic space-y-3">
-                <Compass className="w-7 h-7 text-slate-300 mx-auto animate-pulse" />
-                <p>Initialize Career Copilot to compile your weekly missions checklist.</p>
-                <button
-                  onClick={() => onTabChange('copilot')}
-                  className="px-4 py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/15 rounded-lg cursor-pointer"
-                >
-                  Configure Career GPS
-                </button>
+              <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 p-6 text-center shadow-xs">
+                <div className="absolute right-0 top-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
+                <div className="absolute -left-12 -top-12 w-28 h-28 bg-orange-500/5 rounded-full blur-3xl pointer-events-none animate-pulse-slow"></div>
+                
+                <div className="space-y-4 relative z-10">
+                  <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 p-[1.5px] mx-auto shadow-md shadow-amber-500/10">
+                    <div className="w-full h-full bg-slate-50 dark:bg-slate-955 rounded-[12px] flex items-center justify-center text-amber-500 dark:text-amber-400">
+                      <Compass className="w-5.5 h-5.5" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <h4 className="text-xs font-black text-slate-800 dark:text-slate-200 font-outfit uppercase tracking-wider">Initialize Career Copilot GPS</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                      Configure your career roadmap. Map missing resume skills, unlock custom study roadmaps, and track your weekly goals toward target roles.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => onTabChange('copilot')}
+                    className="px-4 py-2 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/15 border border-amber-500/20 rounded-xl cursor-pointer transition-all uppercase tracking-wider inline-flex items-center space-x-1"
+                  >
+                    <span>Configure GPS Route</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
               </div>
             ) : dashboardTasks.length === 0 ? (
               <div className="py-10 text-center text-xs text-slate-400 italic">
@@ -555,10 +657,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
                 {dashboardTasks.map((task) => {
                   const isCompleted = task.status === 'Completed';
                   return (
-                    <div 
+                    <motion.div 
+                      variants={itemVariants}
                       key={task.taskId}
                       onClick={() => handleToggleTask(task.missionId, task.taskId, task.status)}
-                      className="flex items-start space-x-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-950/60 cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-800/30 transition-all select-none"
+                      className="flex items-start space-x-2.5 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/60 cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-800/30 transition-all select-none"
                     >
                       <input
                         type="checkbox"
@@ -573,7 +676,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
                       }`}>
                         {task.text}
                       </span>
-                    </div>
+                    </motion.div>
                   );
                 })}
                 
@@ -588,10 +691,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onTabChange, onViewReport 
             )}
           </div>
 
-        </div>
+        </motion.div>
 
       </div>
-    </div>
+    </motion.div>
   );
 };
 export default Dashboard;

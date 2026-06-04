@@ -337,9 +337,48 @@ export const CareerCopilot: React.FC<CareerCopilotProps> = () => {
 
   if (loading) {
     return (
-      <div className="py-32 text-center text-sm font-semibold text-slate-400 flex flex-col items-center justify-center space-y-3">
-        <Loader2 className="w-8 h-8 text-primary animate-spin" />
-        <span>Synthesizing your AI Copilot environments...</span>
+      <div className="space-y-8 animate-pulse-slow">
+        {/* Header Skeleton */}
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800/40 pb-6">
+          <div className="space-y-2.5">
+            <div className="h-3 w-40 bg-slate-200 dark:bg-slate-800/60 rounded" />
+            <div className="h-8 w-80 bg-slate-200 dark:bg-slate-800/60 rounded-xl" />
+            <div className="h-4 w-96 max-w-full bg-slate-200 dark:bg-slate-800/60 rounded-lg" />
+          </div>
+          <div className="flex space-x-3 shrink-0">
+            <div className="h-10 w-44 bg-slate-200 dark:bg-slate-800/60 rounded-xl" />
+            <div className="h-10 w-24 bg-slate-200 dark:bg-slate-800/60 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Subtabs Skeleton */}
+        <div className="h-10 w-80 bg-slate-200/40 dark:bg-slate-800/20 rounded-xl border border-slate-200/40 dark:border-slate-800/20" />
+
+        {/* Subtab content skeletons */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main skeleton content */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="h-48 w-full bg-slate-200/40 dark:bg-slate-800/30 rounded-2xl border border-slate-200/60 dark:border-slate-800/40" />
+            <div className="glass-card rounded-2xl p-6 space-y-4">
+              <div className="h-4.5 w-48 bg-slate-200 dark:bg-slate-800/60 rounded" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-20 w-full bg-slate-100/50 dark:bg-slate-800/30 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Side stats skeleton */}
+          <div className="glass-card rounded-2xl p-6 space-y-4">
+            <div className="h-4.5 w-36 bg-slate-200 dark:bg-slate-800/60 rounded" />
+            <div className="grid grid-cols-2 gap-3.5">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-24 w-full bg-slate-100/50 dark:bg-slate-800/30 rounded-xl" />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -583,7 +622,7 @@ export const CareerCopilot: React.FC<CareerCopilotProps> = () => {
               onClick={() => setActiveSubTab(subTab.id as any)}
               className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
                 isActive 
-                  ? 'bg-white dark:bg-slate-900 text-primary dark:text-cyan-400 shadow-sm border border-slate-200/50 dark:border-slate-800/40' 
+                  ? 'bg-white/85 dark:bg-slate-900 text-primary dark:text-cyan-400 shadow-sm border border-slate-200/50 dark:border-slate-800/40 !transform-none !shadow-xs' 
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -772,7 +811,7 @@ export const CareerCopilot: React.FC<CareerCopilotProps> = () => {
                                 transition={{ duration: 0.2 }}
                                 className="overflow-hidden"
                               >
-                                <div className="p-4.5 border-t border-slate-100 dark:border-slate-800/60 space-y-4 bg-white dark:bg-slate-900/40">
+                                <div className="p-4.5 border-t border-slate-100 dark:border-slate-800/60 space-y-4 bg-slate-50/20 dark:bg-slate-950/20">
                                   
                                   {/* Description & skills to learn */}
                                   <div className="space-y-2 text-xs">
@@ -912,7 +951,7 @@ export const CareerCopilot: React.FC<CareerCopilotProps> = () => {
                       return (
                         <div 
                           key={p.id}
-                          className="flex flex-col justify-between p-5 rounded-2xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950/20 shadow-sm hover:shadow-md hover:border-slate-200 dark:hover:border-slate-700/60 transition-all duration-200 relative overflow-hidden"
+                          className="flex flex-col justify-between p-5 rounded-2xl glass-card hover-lift relative overflow-hidden"
                         >
                           <div>
                             {/* Header badges */}

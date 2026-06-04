@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { apiClient } from '../services/api';
 import { 
   Loader2, 
@@ -11,7 +12,8 @@ import {
   Zap,
   RefreshCw,
   Mic,
-  MicOff
+  MicOff,
+  FileText
 } from 'lucide-react';
 
 interface AnalysisRecord {
@@ -33,7 +35,11 @@ interface EvaluationResult {
   suggestedAnswer: string;
 }
 
-export const MockInterview: React.FC = () => {
+interface MockInterviewProps {
+  onTabChange?: (tab: any) => void;
+}
+
+export const MockInterview: React.FC<MockInterviewProps> = ({ onTabChange }) => {
   const [history, setHistory] = useState<AnalysisRecord[]>([]);
   const [selectedRecord, setSelectedRecord] = useState<AnalysisRecord | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -246,76 +252,136 @@ export const MockInterview: React.FC = () => {
            (selectedRecord as any).interviewQuestions?.[category] || [];
   };
 
+  // Animation configurations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
+  };
+
   return (
-    <div className="space-y-6 animate-fadeIn selection:bg-primary/20">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-6 selection:bg-primary/20"
+    >
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold text-secondary-dark tracking-tight font-outfit">
+      <motion.div variants={itemVariants}>
+        <h1 className="text-3xl font-extrabold text-secondary-dark dark:text-white tracking-tight font-outfit">
           AI Mock Interview Simulator
         </h1>
-        <p className="text-sm text-secondary-light mt-1">
+        <p className="text-sm text-secondary-light dark:text-slate-400 mt-1">
           Select custom-generated questions from your resume reviews, type your answer, and receive real-time scoring and STAR evaluations.
         </p>
-      </div>
+      </motion.div>
 
       {loading ? (
-        <div className="py-24 text-center text-sm font-semibold text-slate-400 flex flex-col items-center justify-center space-y-3">
-          <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          <span>Setting up your interview environment...</span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-pulse-slow">
+          {/* Left Pane Skeletons */}
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/60 shadow-xs rounded-2xl p-4 space-y-2">
+              <div className="h-2.5 w-24 bg-slate-200 dark:bg-slate-800/60 rounded" />
+              <div className="h-8 w-full bg-slate-100 dark:bg-slate-850 rounded-xl" />
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/60 shadow-xs rounded-2xl overflow-hidden flex flex-col h-96 space-y-4 p-4">
+              <div className="flex space-x-2 border-b border-slate-100 dark:border-slate-850 pb-2">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-7 flex-1 bg-slate-200 dark:bg-slate-850 rounded-lg" />
+                ))}
+              </div>
+              <div className="space-y-3 flex-1 overflow-hidden">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-12 w-full bg-slate-100 dark:bg-slate-850 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+          {/* Right Pane Skeletons */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/60 shadow-xs rounded-2xl p-6 space-y-3">
+              <div className="h-3 w-32 bg-slate-200 dark:bg-slate-800/60 rounded" />
+              <div className="h-5 w-3/4 bg-slate-200 dark:bg-slate-800/60 rounded-md" />
+            </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/60 shadow-xs rounded-2xl p-6 space-y-4">
+              <div className="h-32 w-full bg-slate-100 dark:bg-slate-850 rounded-xl" />
+              <div className="flex justify-between items-center">
+                <div className="h-8 w-24 bg-slate-200 dark:bg-slate-800/60 rounded-lg" />
+                <div className="h-10 w-36 bg-slate-200 dark:bg-slate-800/60 rounded-xl" />
+              </div>
+            </div>
+          </div>
         </div>
       ) : history.length === 0 ? (
-        <div className="py-16 text-center border border-dashed border-slate-200 bg-white rounded-2xl max-w-lg mx-auto p-8 space-y-4 shadow-sm">
-          <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center mx-auto text-primary">
-            <MessageSquare className="w-7 h-7" />
+        <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 p-8 sm:p-12 text-center max-w-xl mx-auto shadow-xs">
+          {/* Floating illustrative gradient circles */}
+          <div className="absolute -right-20 -top-20 w-36 h-36 bg-primary/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -left-16 -bottom-16 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl pointer-events-none animate-pulse-slow"></div>
+          
+          <div className="max-w-md mx-auto space-y-5 relative z-10">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-primary to-indigo-600 p-[1.5px] mx-auto shadow-md shadow-primary/10">
+              <div className="w-full h-full bg-slate-50 dark:bg-slate-955 rounded-[14px] flex items-center justify-center text-primary dark:text-cyan-400">
+                <MessageSquare className="w-6.5 h-6.5" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-extrabold text-slate-850 dark:text-white font-outfit">AI Mock Interview Prep Bank</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                Unlock custom technical, behavioral, and HR questions generated from your resumes and target jobs. Input voice/text answers to receive detailed score card breakdowns.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => { if(onTabChange) onTabChange('analyze'); else window.location.hash = '#analyze'; }}
+              className="px-5 py-2.5 text-xs font-bold text-white btn-ai-bloom rounded-xl cursor-pointer shadow-lg inline-flex items-center space-x-1.5"
+            >
+              <span>Audit Resume to Build Prep Bank</span>
+              <FileText className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <div>
-            <h3 className="text-md font-bold text-secondary-dark font-outfit">Interview Bank Empty</h3>
-            <p className="text-xs text-secondary-light mt-1 max-w-md mx-auto leading-relaxed">
-              You must run a resume analysis audit first! HireLens AI uses your parsed resume details and the target job description to generate 20 custom interview prep questions.
-            </p>
-          </div>
-          <button
-            onClick={() => window.location.reload()}
-            className="px-5 py-2.5 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-xl cursor-pointer shadow-md transition-all duration-200"
-          >
-            Audit a Resume Now
-          </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Pane: Question Selector (1/3 width) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fadeIn">
+          {/* Left Pane */}
           <div className="space-y-4">
-            {/* Target Job Role Context Selector */}
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 space-y-2">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">TARGET JOB CONTEXT</label>
+            <div className="glass-card !transform-none !shadow-xs rounded-2xl p-4 space-y-2">
+              <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block">TARGET JOB CONTEXT</label>
               <select
                 value={selectedRecord?.id || ''}
                 onChange={(e) => handleRecordSelect(Number(e.target.value))}
-                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-bold text-slate-700 focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary transition-all cursor-pointer"
+                className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/20 text-xs font-bold text-slate-700 dark:text-slate-350 focus:outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-955 focus:ring-1 focus:ring-primary transition-all cursor-pointer"
               >
                 {history.map((record) => (
-                  <option key={record.id} value={record.id}>
+                  <option key={record.id} value={record.id} className="dark:bg-slate-900">
                     {record.job_role}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Questions list card */}
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl overflow-hidden flex flex-col max-h-[500px]">
-              {/* Category tabs */}
-              <div className="flex border-b border-slate-100 bg-slate-50/30 p-1">
+            <div className="glass-card !transform-none !shadow-xs rounded-2xl overflow-hidden flex flex-col max-h-[500px]">
+              <div className="flex border-b border-slate-100 dark:border-slate-800/40 bg-slate-50/30 dark:bg-slate-900/30 p-1">
                 {(['technical', 'behavioral', 'hr'] as const).map((cat) => {
                   const labelMap = { technical: 'Tech', behavioral: 'Behavior', hr: 'HR / Fit' };
                   const isActive = activeCategory === cat;
                   return (
                     <button
                       key={cat}
+                      type="button"
                       onClick={() => handleCategoryChange(cat)}
                       className={`flex-1 py-2 text-[11px] font-bold rounded-lg transition-all capitalize cursor-pointer ${
                         isActive 
-                          ? 'bg-white text-primary shadow-sm border border-slate-200/50' 
-                          : 'text-slate-500 hover:text-slate-800'
+                          ? 'bg-white/85 dark:bg-slate-800 text-primary dark:text-cyan-400 shadow-sm border border-slate-200/50 dark:border-slate-700/40 !transform-none !shadow-xs' 
+                          : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                       }`}
                     >
                       {labelMap[cat]}
@@ -324,25 +390,25 @@ export const MockInterview: React.FC = () => {
                 })}
               </div>
 
-              {/* Questions list container */}
-              <div className="overflow-y-auto p-4 space-y-2.5 flex-1 divide-y divide-slate-50">
+              <div className="overflow-y-auto p-4 space-y-2.5 flex-1 divide-y divide-slate-50 dark:divide-slate-800/30">
                 {getQuestionsList(activeCategory).length === 0 ? (
-                  <p className="text-xs text-secondary-light italic text-center py-8">No questions loaded for this profile.</p>
+                  <p className="text-xs text-secondary-light dark:text-slate-450 italic text-center py-8">No questions loaded for this profile.</p>
                 ) : (
                   getQuestionsList(activeCategory).map((q, idx) => {
                     const isSelected = selectedQuestion === q;
                     return (
                       <button
                         key={idx}
+                        type="button"
                         onClick={() => handleQuestionSelect(q)}
                         className={`w-full text-left p-3 rounded-xl text-xs font-semibold leading-relaxed transition-all duration-150 flex items-start space-x-2.5 cursor-pointer ${
                           isSelected 
                             ? 'bg-primary/5 text-primary border border-primary/20 shadow-[inset_1px_0_0_rgba(99,102,241,0.15)] font-bold' 
-                            : 'text-slate-600 hover:bg-slate-50 border border-transparent'
+                            : 'text-slate-600 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900/30 border border-transparent'
                         }`}
                       >
                         <span className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center font-bold text-[9px] ${
-                          isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'
+                          isSelected ? 'bg-primary text-white animate-pulse' : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-500'
                         }`}>
                           {idx + 1}
                         </span>
@@ -355,43 +421,41 @@ export const MockInterview: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Pane: Simulator / Terminal (2/3 width) */}
+          {/* Right Pane: Simulator */}
           <div className="lg:col-span-2 space-y-6">
             {selectedQuestion ? (
               <>
-                {/* Active Question Box */}
-                <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 relative overflow-hidden transition-all duration-200">
+                <div className="glass-card !transform-none !shadow-xs rounded-2xl p-6 relative overflow-hidden">
                   <div className="absolute right-0 top-0 w-24 h-24 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-xl pointer-events-none"></div>
                   
                   <div className="flex items-center space-x-2 mb-3">
                     <HelpCircle className="w-5 h-5 text-primary shrink-0" />
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Active Practice Question</span>
+                    <span className="text-[10px] font-bold text-primary dark:text-cyan-400 uppercase tracking-widest">Active Practice Question</span>
                   </div>
                   
-                  <h3 className="text-md font-extrabold text-secondary-dark font-outfit leading-relaxed">
+                  <h3 className="text-md font-extrabold text-slate-800 dark:text-white font-outfit leading-relaxed">
                     {selectedQuestion}
                   </h3>
                 </div>
 
-                {/* Evaluation State or Practice Form */}
                 {evaluationResult ? (
-                  /* Practice evaluation feedback card */
-                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-6 animate-fadeIn transition-all duration-200">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+                  <div className="glass-card hover-lift rounded-2xl p-6 space-y-6 animate-fadeIn">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
                       <div className="flex items-center space-x-3">
-                        <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-outfit font-extrabold text-lg ${getScoreColor(evaluationResult.score)} shadow-sm`}>
+                        <div className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-outfit font-extrabold text-lg ${getScoreColor(evaluationResult.score)} shadow-xs`}>
                           <span>{evaluationResult.score}</span>
                           <span className="text-[9px] font-bold uppercase tracking-wide leading-none mt-0.5">/10</span>
                         </div>
                         <div>
-                          <h4 className="font-extrabold text-secondary-dark font-outfit text-md flex items-center space-x-1.5">
+                          <h4 className="font-extrabold text-slate-800 dark:text-white font-outfit text-md flex items-center space-x-1.5">
                             <Award className="w-4.5 h-4.5 text-primary shrink-0" />
                             <span>AI Performance Evaluation</span>
                           </h4>
-                          <span className="text-[10px] font-semibold text-slate-400">STAR Method & Conceptual Clarity Grade</span>
+                          <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-550">STAR Method & Conceptual Clarity Grade</span>
                         </div>
                       </div>
                       <button
+                        type="button"
                         onClick={resetPractice}
                         className="self-start sm:self-auto px-4.5 py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/15 rounded-xl flex items-center space-x-1.5 cursor-pointer transition-colors"
                       >
@@ -400,25 +464,22 @@ export const MockInterview: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Constructive feedback */}
                     <div className="space-y-1.5">
-                      <h5 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Assessment feedback</h5>
-                      <p className="text-xs text-secondary-dark leading-relaxed font-semibold">
+                      <h5 className="text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-widest">AI Assessment feedback</h5>
+                      <p className="text-xs text-slate-700 dark:text-slate-350 leading-relaxed font-semibold">
                         {evaluationResult.feedback}
                       </p>
                     </div>
 
-                    {/* STAR highlights / strengths & weaknesses */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      {/* Strengths */}
-                      <div className="p-4 rounded-xl border border-success/20 bg-success/5 space-y-2.5">
+                      <div className="p-4 rounded-xl border border-success/20 bg-success/5 dark:bg-success/2 space-y-2.5">
                         <h5 className="text-xs font-bold text-success flex items-center space-x-1.5">
                           <CheckCircle2 className="w-4 h-4 shrink-0" />
                           <span>What you did right (Strengths)</span>
                         </h5>
                         <ul className="space-y-1.5">
                           {evaluationResult.starStrengths.map((item, idx) => (
-                            <li key={idx} className="text-xs text-secondary-light font-medium leading-relaxed flex items-start space-x-1.5">
+                            <li key={idx} className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed flex items-start space-x-1.5">
                               <span className="text-success select-none shrink-0">•</span>
                               <span>{item}</span>
                             </li>
@@ -426,15 +487,14 @@ export const MockInterview: React.FC = () => {
                         </ul>
                       </div>
 
-                      {/* Weaknesses */}
-                      <div className="p-4 rounded-xl border border-error/20 bg-error/5 space-y-2.5">
+                      <div className="p-4 rounded-xl border border-error/20 bg-error/5 dark:bg-error/2 space-y-2.5">
                         <h5 className="text-xs font-bold text-error flex items-center space-x-1.5">
                           <AlertCircle className="w-4.5 h-4.5 shrink-0" />
                           <span>Areas to improve (Weaknesses)</span>
                         </h5>
                         <ul className="space-y-1.5">
                           {evaluationResult.starWeaknesses.map((item, idx) => (
-                            <li key={idx} className="text-xs text-secondary-light font-medium leading-relaxed flex items-start space-x-1.5">
+                            <li key={idx} className="text-xs text-slate-700 dark:text-slate-300 font-medium leading-relaxed flex items-start space-x-1.5">
                               <span className="text-error select-none shrink-0">•</span>
                               <span>{item}</span>
                             </li>
@@ -443,29 +503,26 @@ export const MockInterview: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Gold standard sample answer */}
-                    <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white space-y-3 relative overflow-hidden group">
+                    <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white dark:from-slate-900/60 dark:to-slate-850/60 border dark:border-slate-800/40 space-y-3 relative overflow-hidden group">
                       <div className="absolute -right-10 -top-10 w-24 h-24 bg-primary/20 rounded-full blur-xl"></div>
                       
-                      <div className="flex items-center space-x-1.5 text-primary">
+                      <div className="flex items-center space-x-1.5 text-primary dark:text-cyan-400">
                         <Zap className="w-4.5 h-4.5" />
                         <span className="text-[10px] font-bold uppercase tracking-wider font-outfit">Recruiter Suggested Answer (10/10)</span>
                       </div>
                       
-                      <p className="text-xs text-slate-300 leading-relaxed italic">
+                      <p className="text-xs text-slate-300 dark:text-slate-200 leading-relaxed italic">
                         "{evaluationResult.suggestedAnswer}"
                       </p>
                     </div>
                   </div>
                 ) : (
-                  /* Practice answering form */
-                  <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 transition-all duration-200">
+                  <div className="glass-card !transform-none !shadow-xs rounded-2xl p-6">
                     <form onSubmit={handleSubmitAnswer} className="space-y-5">
                       <div className="space-y-2">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-                          <label className="text-xs font-bold text-secondary-light tracking-wide uppercase">YOUR RESPONSE</label>
+                          <label className="text-xs font-bold text-slate-400 dark:text-slate-550 tracking-wide uppercase">YOUR RESPONSE</label>
                           <div className="flex items-center space-x-3">
-                            {/* Microphone Answering button */}
                             {speechSupported && (
                               <button
                                 type="button"
@@ -473,7 +530,7 @@ export const MockInterview: React.FC = () => {
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition-all duration-300 cursor-pointer border ${
                                   isRecording 
                                     ? 'bg-error text-white border-error shadow-[0_0_12px_rgba(239,68,68,0.4)] animate-pulse' 
-                                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700/80 dark:hover:bg-slate-700'
+                                    : 'bg-slate-50 text-slate-500 hover:bg-slate-100 border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-800'
                                 }`}
                               >
                                 {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5 text-primary" />}
@@ -490,7 +547,7 @@ export const MockInterview: React.FC = () => {
                           value={userAnswer}
                           onChange={(e) => { setUserAnswer(e.target.value); setErrorMsg(null); }}
                           placeholder="Type your response here... (Explain Situation, Task, Action, and Result where applicable)"
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary transition-all leading-relaxed"
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-550 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary transition-all leading-relaxed"
                           disabled={evaluating}
                         ></textarea>
                       </div>
@@ -524,15 +581,15 @@ export const MockInterview: React.FC = () => {
                 )}
               </>
             ) : (
-              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-10 text-center text-slate-400 space-y-2">
-                <HelpCircle className="w-8 h-8 text-slate-300 mx-auto" />
+              <div className="bg-white dark:bg-slate-955 border border-slate-200 dark:border-slate-800/40 shadow-xs rounded-2xl p-10 text-center text-slate-400 dark:text-slate-500 space-y-2">
+                <HelpCircle className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto" />
                 <p className="text-xs font-semibold">Please select a question from the left sidebar pane to start your practice session.</p>
               </div>
             )}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 export default MockInterview;

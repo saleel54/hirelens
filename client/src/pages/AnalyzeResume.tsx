@@ -230,8 +230,8 @@ export const AnalyzeResume: React.FC<AnalyzeResumeProps> = ({ onAnalysisSuccess 
                 onClick={triggerUploadClick}
                 animate={{
                   scale: isDragActive ? 1.015 : 1,
-                  borderColor: isDragActive ? 'var(--color-primary)' : 'rgba(15, 23, 42, 0.1)',
-                  backgroundColor: isDragActive ? 'rgba(99, 102, 241, 0.05)' : 'rgba(255, 255, 255, 0.5)'
+                  borderColor: isDragActive ? 'var(--color-primary)' : 'var(--drag-border)',
+                  backgroundColor: isDragActive ? 'rgba(99, 102, 241, 0.05)' : 'var(--drag-bg)'
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="w-full border-2 border-dashed rounded-xl py-10 px-4 text-center cursor-pointer"

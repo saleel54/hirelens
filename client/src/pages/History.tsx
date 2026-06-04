@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { apiClient } from '../services/api';
 import { 
   Eye, 
   Trash2, 
   Search, 
   Filter, 
-  Clock, 
   FileText
 } from 'lucide-react';
 
@@ -84,15 +84,36 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
     return 'bg-error/10 text-error border border-error/20';
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 100, damping: 15 } }
+  };
+
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-6 selection:bg-primary/20"
+    >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-secondary-dark tracking-tight font-outfit">
+          <h1 className="text-3xl font-extrabold text-secondary-dark dark:text-white tracking-tight font-outfit">
             Analysis History
           </h1>
-          <p className="text-sm text-secondary-light mt-1">
+          <p className="text-sm text-secondary-light dark:text-slate-400 mt-1">
             Access, view, or manage all your past AI resume audits and scores.
           </p>
         </div>
@@ -103,10 +124,10 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
           <FileText className="w-4 h-4" />
           <span>Audit New Resume</span>
         </button>
-      </div>
+      </motion.div>
 
       {/* Control panel (Search & Filter) */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4 transition-all duration-200">
+      <motion.div variants={itemVariants} className="glass-card rounded-2xl p-5 flex flex-col md:flex-row md:items-center gap-4">
         {/* Search */}
         <div className="relative flex-1">
           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -117,23 +138,23 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
             placeholder="Search by job role or file name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-sm placeholder:text-slate-400 focus:outline-none focus:border-primary focus:bg-white focus:ring-1 focus:ring-primary transition-all duration-200"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-950 focus:ring-1 focus:ring-primary transition-all duration-200"
           />
         </div>
 
         {/* Filter */}
         <div className="flex items-center space-x-2.5">
           <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-xs font-bold text-secondary-light tracking-wide uppercase">ATS Category:</span>
-          <div className="flex bg-slate-100/80 p-1 rounded-xl">
+          <span className="text-xs font-bold text-secondary-light dark:text-slate-400 tracking-wide uppercase">ATS Category:</span>
+          <div className="flex bg-slate-100/80 dark:bg-slate-900/60 p-1 rounded-xl">
             {(['all', 'high', 'medium', 'low'] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setScoreFilter(filter)}
                 className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all capitalize cursor-pointer ${
                   scoreFilter === filter 
-                    ? 'bg-white text-secondary-dark shadow-sm' 
-                    : 'text-slate-500 hover:text-secondary-dark'
+                    ? 'bg-white/85 dark:bg-slate-800 text-secondary-dark dark:text-white shadow-sm' 
+                    : 'text-slate-500 hover:text-secondary-dark dark:hover:text-white'
                 }`}
               >
                 {filter === 'high' ? 'High (80%+)' : filter === 'medium' ? 'Medium (60%+)' : filter === 'low' ? 'Low (<60%)' : 'All'}
@@ -141,42 +162,90 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
             ))}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Table Section */}
-      <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 transition-all duration-200">
+      <motion.div variants={itemVariants} className="glass-card rounded-2xl p-6">
         {loading ? (
-          <div className="py-24 text-center text-sm font-semibold text-slate-400 flex flex-col items-center justify-center space-y-3">
-            <Clock className="w-8 h-8 text-primary animate-spin" />
-            <span>Retrieving historical data records...</span>
+          <div className="space-y-4 animate-pulse-slow">
+            <div className="h-6 w-1/4 bg-slate-200 dark:bg-slate-800/40 rounded-md" />
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800/40 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="py-3 px-4">Audit Date</th>
+                    <th className="py-3 px-4">Targeted Job Role</th>
+                    <th className="py-3 px-4">Resume File Name</th>
+                    <th className="py-3 px-4 text-center">ATS Match</th>
+                    <th className="py-3 px-4 text-center">Quality Score</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...Array(5)].map((_, i) => (
+                    <tr key={i} className="border-b border-slate-100/50 dark:border-slate-800/20">
+                      <td className="py-4 px-4"><div className="h-3 w-16 bg-slate-200 dark:bg-slate-800/40 rounded" /></td>
+                      <td className="py-4 px-4"><div className="h-4.5 w-36 bg-slate-200 dark:bg-slate-800/40 rounded-lg" /></td>
+                      <td className="py-4 px-4"><div className="h-3 w-48 bg-slate-200 dark:bg-slate-800/40 rounded" /></td>
+                      <td className="py-4 px-4 text-center"><div className="h-5 w-12 bg-slate-200 dark:bg-slate-800/40 rounded-full mx-auto" /></td>
+                      <td className="py-4 px-4 text-center"><div className="h-3.5 w-8 bg-slate-200 dark:bg-slate-800/40 rounded mx-auto" /></td>
+                      <td className="py-4 px-4 text-right"><div className="h-8 w-20 bg-slate-200 dark:bg-slate-800/40 rounded-lg ml-auto" /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         ) : filteredHistory.length === 0 ? (
-          <div className="py-20 text-center border border-dashed border-slate-200 rounded-xl max-w-lg mx-auto p-8 space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
-              <Search className="w-6 h-6" />
+          history.length === 0 ? (
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200/60 dark:border-white/5 bg-gradient-to-br from-indigo-500/5 via-transparent to-purple-500/5 p-8 text-center max-w-xl mx-auto shadow-xs">
+              <div className="absolute -right-16 -top-16 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+              
+              <div className="max-w-md mx-auto space-y-4 relative z-10">
+                <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-primary to-indigo-600 p-[1.5px] mx-auto shadow-md shadow-primary/10">
+                  <div className="w-full h-full bg-slate-50 dark:bg-slate-955 rounded-[14px] flex items-center justify-center text-primary dark:text-cyan-400">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="text-md font-extrabold text-slate-850 dark:text-white font-outfit">Your Audit Log is Empty</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold leading-relaxed">
+                    You haven't run any resume evaluations yet. Upload your PDF resume and input a target job description to verify your ATS match score.
+                  </p>
+                </div>
+                <button
+                  onClick={() => onTabChange('analyze')}
+                  className="px-5 py-2.5 text-xs font-bold text-white btn-ai-bloom rounded-xl cursor-pointer shadow-md inline-flex items-center space-x-1.5"
+                >
+                  <span>Evaluate your first resume</span>
+                  <FileText className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-            <div>
-              <h3 className="text-md font-bold text-secondary-dark font-outfit">No Records Match</h3>
-              <p className="text-xs text-secondary-light mt-1">
-                {history.length === 0 
-                  ? "You haven't run any resume evaluations yet." 
-                  : "Try adjusting your query or category filters."}
-              </p>
-            </div>
-            {history.length === 0 && (
+          ) : (
+            <div className="py-16 text-center max-w-md mx-auto space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto text-slate-400 dark:text-slate-600 border border-slate-200/50 dark:border-slate-800/40">
+                <Search className="w-5.5 h-5.5" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-md font-bold text-slate-800 dark:text-white font-outfit">No Records Match</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Try adjusting your query or category filters.
+                </p>
+              </div>
               <button
-                onClick={() => onTabChange('analyze')}
+                onClick={() => { setSearchQuery(''); setScoreFilter('all'); }}
                 className="px-4 py-2 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 border border-primary/15 rounded-lg cursor-pointer transition-colors"
               >
-                Evaluate your first resume
+                Clear all filters
               </button>
-            )}
-          </div>
+            </div>
+          )
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <tr className="border-b border-slate-100 dark:border-slate-800/40 text-xs font-bold text-slate-400 uppercase tracking-wider">
                   <th className="py-3 px-4">Audit Date</th>
                   <th className="py-3 px-4">Targeted Job Role</th>
                   <th className="py-3 px-4">Resume File Name</th>
@@ -185,24 +254,24 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm font-medium text-secondary-dark">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/40 text-sm font-medium text-secondary-dark dark:text-slate-200">
                 {filteredHistory.map((record) => (
                   <tr 
                     key={record.id}
                     onClick={() => onViewReport(record.id)}
-                    className="hover:bg-slate-50/50 cursor-pointer transition-all duration-150 group"
+                    className="hover:bg-slate-50/50 dark:hover:bg-slate-900/40 cursor-pointer transition-all duration-150 group"
                   >
-                    <td className="py-3.5 px-4 text-xs text-secondary-light font-semibold">
+                    <td className="py-3.5 px-4 text-xs text-secondary-light dark:text-slate-400 font-semibold">
                       {new Date(record.created_at).toLocaleDateString(undefined, { 
                         year: 'numeric', 
                         month: 'short', 
                         day: 'numeric' 
                       })}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-secondary-dark group-hover:text-primary transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-secondary-dark dark:text-white group-hover:text-primary transition-colors">
                       {record.job_role}
                     </td>
-                    <td className="py-3.5 px-4 text-xs text-secondary-light font-semibold truncate max-w-xs">
+                    <td className="py-3.5 px-4 text-xs text-secondary-light dark:text-slate-400 font-semibold truncate max-w-xs">
                       {record.resume_file_name}
                     </td>
                     <td className="py-3.5 px-4 text-center">
@@ -210,7 +279,7 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
                         {record.ats_score}%
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-center text-xs text-secondary-light font-semibold">
+                    <td className="py-3.5 px-4 text-center text-xs text-secondary-light dark:text-slate-400 font-semibold">
                       {record.resume_quality_score}%
                     </td>
                     <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
@@ -238,8 +307,8 @@ export const History: React.FC<HistoryProps> = ({ onTabChange, onViewReport }) =
             </table>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 export default History;

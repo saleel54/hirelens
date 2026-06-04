@@ -166,7 +166,7 @@ function AppContent() {
                   )}
 
                   {activeTab === 'interview' && (
-                    <MockInterview />
+                    <MockInterview onTabChange={handleTabChange} />
                   )}
 
                   {activeTab === 'about' && (
