@@ -10,6 +10,7 @@ const init_js_1 = require("./db/init.js");
 const db_js_1 = require("./config/db.js");
 const authRoutes_js_1 = __importDefault(require("./routes/authRoutes.js"));
 const analysisRoutes_js_1 = __importDefault(require("./routes/analysisRoutes.js"));
+const copilotRoutes_js_1 = __importDefault(require("./routes/copilotRoutes.js"));
 // Load environment variables
 dotenv_1.default.config();
 const app = (0, express_1.default)();
@@ -37,6 +38,7 @@ app.use(express_1.default.json());
 // Register API Routes
 app.use('/api/auth', authRoutes_js_1.default);
 app.use('/api/analysis', analysisRoutes_js_1.default);
+app.use('/api/copilot', copilotRoutes_js_1.default);
 // Standard API health endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({

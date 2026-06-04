@@ -5,6 +5,8 @@ const db_js_1 = require("../config/db.js");
 const parser_js_1 = require("../services/parser.js");
 const atsEngine_js_1 = require("../services/atsEngine.js");
 const gemini_js_1 = require("../services/gemini.js");
+const prisma_js_1 = require("../db/prisma.js");
+const copilotController_js_1 = require("./copilotController.js");
 /**
  * Executes a full end-to-end resume analysis audit
  */
@@ -67,6 +69,10 @@ const analyzeResume = async (req, res) => {
             JSON.stringify(aiFeedback.interviewQuestions)
         ]);
         const savedRecord = dbResult.rows[0];
+        // Recalculate Job Readiness Score dynamically when a new resume is analyzed
+        await (0, copilotController_js_1.recalculateJobReadiness)(req.user.id).catch(err => {
+            console.error('⚠️ Failed to recalculate job readiness after resume analysis:', err);
+        });
         // Return full computed analytical context to user
         return res.status(200).json({
             message: 'Analysis completed successfully',
@@ -188,7 +194,12 @@ const evaluateAnswer = async (req, res) => {
         return res.status(400).json({ error: 'Validation Error', message: 'Question and answer are required.' });
     }
     try {
-        const evaluation = await (0, gemini_js_1.evaluateInterviewResponse)(question.trim(), answer.trim(), jobRole ? jobRole.trim() : 'Software Engineer');
+        const role = jobRole ? jobRole.trim() : 'Software Engineer';
+        const evaluation = await (0, gemini_js_1.evaluateInterviewResponse)(question.trim(), answer.trim(), role);
+        // Save mock interview details to the database to track practice progress
+        await prisma_js_1.dbService.saveInterviewSession(req.user.id, role, question.trim(), answer.trim(), evaluation.score, evaluation.feedback, evaluation.suggestedAnswer);
+        // Recalculate Job Readiness Score including the new interview progress
+        await (0, copilotController_js_1.recalculateJobReadiness)(req.user.id);
         return res.status(200).json(evaluation);
     }
     catch (error) {
