@@ -36,7 +36,7 @@ export const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 });
 
-pool.on('error', (err) => {
+pool.on('error', (err: any) => {
   console.error('⚠️ [database]: Unexpected idle database client error:', err.message || err);
 });
 
